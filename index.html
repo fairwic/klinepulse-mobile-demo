@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#05070a" />
+  <title>KlinePulse · 移动工作台</title>
+  <!-- 移动端 H5 静态原型：单文件多屏切换，沿用桌面端 operator 深色 token。
+       仅用于视觉与交互评审，数据为占位样本，无真实下单能力。
+       品牌名以运行代码 AppLayout 为准使用 KlinePulse。 -->
+  <style>
+    /* ============ 设计 token：复用 appTheme.css 深色口径 ============ */
+    :root {
+      --bg-page: #05070a;
+      --bg-surface: #0b1116;
+      --bg-subtle: #111a20;
+      --bg-elevated: #162229;
+      --text-primary: #f8fafc;
+      --text-secondary: #d7e1e4;
+      --text-muted: #9fb2b8;
+      --border-subtle: rgba(248, 250, 252, 0.14);
+      --border-strong: rgba(158, 230, 220, 0.36);
+      --accent: #62d8cf;
+      --accent-strong: #9ee6dc;
+      --status-success: #79e6a7;
+      --status-warning: #f2c879;
+      --status-danger: #f87171;
+      --status-info: #9ee6dc;
+      --btn-primary-bg: #9ee6dc;
+      --btn-primary-text: #061219;
+      --radius-card: 16px;
+      --radius-pill: 999px;
+      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --tabbar-h: 62px;
+      --topbar-h: 52px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      font-family: 'Manrope', 'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 手机原型外壳：限定最大宽度模拟手机视口，居中于桌面预览 */
+    .device {
+      position: relative;
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg-page);
+      overflow: hidden;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
+
+    /* ============ 顶栏 ============ */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      height: var(--topbar-h);
+      padding: 0 14px;
+      background: rgba(5, 7, 10, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .topbar__brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .topbar__logo {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      display: grid; place-items: center;
+      color: #061219; font-weight: 800; font-size: 13px; flex: 0 0 auto;
+    }
+    .topbar__title { font-weight: 700; font-size: 15px; letter-spacing: 0.2px; white-space: nowrap; }
+    .topbar__actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-subtle); color: var(--text-secondary);
+      display: grid; place-items: center; font-size: 15px; cursor: pointer;
+    }
+    .icon-btn--dot { position: relative; }
+    .icon-btn--dot::after {
+      content: ""; position: absolute; top: 7px; right: 8px;
+      width: 6px; height: 6px; border-radius: 50%; background: var(--status-danger);
+    }
+
+    /* ============ 屏容器 ============ */
+    .screen {
+      display: none;
+      padding: 14px 14px calc(var(--tabbar-h) + var(--safe-bottom) + 18px);
+      animation: fade 220ms ease;
+    }
+    .screen.is-active { display: block; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .prototype-notice {
+      margin: 12px 14px 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(242, 200, 121, 0.32);
+      border-radius: 12px;
+      background: rgba(242, 200, 121, 0.08);
+      color: var(--text-secondary);
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    /* ============ 底部标签栏 ============ */
+    .tabbar {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      z-index: 40;
+      width: 100%;
+      max-width: 430px;
+      height: calc(var(--tabbar-h) + var(--safe-bottom));
+      padding-bottom: var(--safe-bottom);
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      background: rgba(11, 17, 22, 0.96);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .tab {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 3px; border: 0; background: none; cursor: pointer;
+      color: var(--text-muted); font-size: 10.5px; font-weight: 600;
+      padding-top: 6px;
+    }
+    .tab__icon { font-size: 19px; line-height: 1; }
+    .tab.is-active { color: var(--accent-strong); }
+    .tab.is-active .tab__icon { filter: drop-shadow(0 0 6px rgba(158, 230, 220, 0.45)); }
+
+    /* ============ 占位提示（骨架阶段，后续替换为真实内容） ============ */
+    .placeholder {
+      margin-top: 20px; padding: 20px; border-radius: var(--radius-card);
+      border: 1px dashed var(--border-subtle); background: var(--bg-surface);
+      color: var(--text-muted); text-align: center;
+    }
+
+    /* ============ 通用组件库（operator 交易界面确定性基础件） ============ */
+    /* 区块标题：小节分组，左侧标题 + 右侧动作/说明 */
+    .sec { margin-top: 16px; }
+    .sec:first-child { margin-top: 4px; }
+    .sec__head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: 10px; margin-bottom: 9px;
+    }
+    .sec__title { font-size: 13px; font-weight: 700; letter-spacing: 0.3px; color: var(--text-primary); }
+    .sec__hint { font-size: 11px; color: var(--text-muted); }
+    .sec__link { font-size: 11.5px; color: var(--accent); font-weight: 600; text-decoration: none; }
+
+    /* 卡片：所有信息块的基座 */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-card);
+      padding: 14px;
+    }
+    .card + .card { margin-top: 10px; }
+    .card--tap { cursor: pointer; transition: border-color 160ms ease, transform 120ms ease; }
+    .card--tap:active { transform: scale(0.99); border-color: var(--border-strong); }
+
+    /* 状态徽章：非纯色表达（形状/文字/图标前缀共同承担语义，满足无障碍） */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 9px; border-radius: var(--radius-pill);
+      font-size: 11px; font-weight: 700; line-height: 1.6;
+      border: 1px solid transparent; white-space: nowrap;
+    }
+    .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .badge--ok { color: var(--status-success); background: rgba(121, 230, 167, 0.12); border-color: rgba(121, 230, 167, 0.3); }
+    .badge--warn { color: var(--status-warning); background: rgba(242, 200, 121, 0.12); border-color: rgba(242, 200, 121, 0.3); }
+    .badge--danger { color: var(--status-danger); background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.32); }
+    .badge--info { color: var(--status-info); background: rgba(158, 230, 220, 0.1); border-color: rgba(158, 230, 220, 0.28); }
+    .badge--muted { color: var(--text-muted); background: var(--bg-subtle); border-color: var(--border-subtle); }
+    /* 方形徽章变体用于"阻塞/需操作"，形状差异强化非纯色语义 */
+    .badge--square { border-radius: 6px; }
+    .badge--square::before { border-radius: 2px; }
+
+    /* 按钮：主/次/幽灵/危险，触控高度≥44px 满足移动可点性 */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      min-height: 44px; padding: 0 16px; border-radius: 12px;
+      font-size: 13.5px; font-weight: 700; cursor: pointer; border: 1px solid transparent;
+      font-family: inherit;
+    }
+    .btn--block { width: 100%; }
+    .btn--sm { min-height: 36px; padding: 0 12px; font-size: 12.5px; border-radius: 10px; }
+    .btn--primary { background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-primary-bg); }
+    .btn--secondary { background: var(--bg-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
+    .btn--ghost { background: transparent; color: var(--text-secondary); border-color: var(--border-subtle); }
+    .btn--danger { background: rgba(248, 113, 113, 0.14); color: var(--status-danger); border-color: rgba(248, 113, 113, 0.4); }
+    .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+
+    /* 数据行：左标签右数值，交易界面高频布局 */
+    .rows { display: flex; flex-direction: column; gap: 0; }
+    .row {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border-subtle);
+    }
+    .row:last-child { border-bottom: 0; }
+    .row__k { font-size: 12px; color: var(--text-muted); }
+    .row__v { font-size: 13px; font-weight: 600; color: var(--text-primary); text-align: right; }
+    .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+    /* 方向色：多空 / 盈亏，带符号前缀不靠纯色 */
+    .dir-long { color: var(--status-success); }
+    .dir-short { color: var(--status-danger); }
+    .pnl-pos { color: var(--status-success); }
+    .pnl-neg { color: var(--status-danger); }
+
+    /* KPI 网格：首屏关键数字密度 */
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .kpi { padding: 11px 10px; border-radius: 12px; background: var(--bg-subtle); border: 1px solid var(--border-subtle); }
+    .kpi__label { font-size: 10.5px; color: var(--text-muted); margin-bottom: 4px; }
+    .kpi__value { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; }
+    .kpi__sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+
+    /* 准备度条：分段式，用达成/未达成分段而非单纯进度长度传递状态 */
+    .ready { display: flex; flex-direction: column; gap: 8px; }
+    .ready__bar { display: flex; gap: 4px; }
+    .ready__seg { flex: 1; height: 6px; border-radius: 999px; background: var(--bg-elevated); }
+    .ready__seg.is-done { background: var(--status-success); }
+    .ready__seg.is-block { background: var(--status-danger); }
+    .ready__meta { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); }
+
+    /* chips：横向可滚动筛选/标签条 */
+    .chips { display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: 0 0 auto; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
+      background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-subtle); cursor: pointer;
+    }
+    .chip.is-active { background: rgba(158, 230, 220, 0.14); color: var(--accent-strong); border-color: var(--border-strong); }
+
+    /* 列表项：策略/币种/新闻通用行卡 */
+    .item { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
+    .item:last-child { border-bottom: 0; }
+    .item__ico {
+      width: 38px; height: 38px; border-radius: 11px; flex: 0 0 auto;
+      display: grid; place-items: center; font-size: 15px; font-weight: 800;
+      background: var(--bg-subtle); border: 1px solid var(--border-subtle); color: var(--accent-strong);
+    }
+    .item__body { flex: 1; min-width: 0; }
+    .item__title { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item__sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+    .item__right { text-align: right; flex: 0 0 auto; }
+
+    /* 时间线：执行/订单事件流 */
+    .tl { position: relative; padding-left: 18px; }
+    .tl__node { position: relative; padding: 0 0 14px; }
+    .tl__node::before { content: ""; position: absolute; left: -13px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    .tl__node::after { content: ""; position: absolute; left: -10px; top: 12px; bottom: 0; width: 1px; background: var(--border-subtle); }
+    .tl__node:last-child::after { display: none; }
+    .tl__time { font-size: 10.5px; color: var(--text-muted); }
+    .tl__text { font-size: 12.5px; margin-top: 1px; }
+
+    /* 迷你走势占位：窄屏用轻量趋势条替代完整 K 线图 */
+    .spark { display: flex; align-items: flex-end; gap: 2px; height: 34px; }
+    .spark span { flex: 1; background: linear-gradient(180deg, var(--accent-strong), rgba(98, 216, 207, 0.25)); border-radius: 2px 2px 0 0; }
+
+    .muted { color: var(--text-muted); }
+    .tiny { font-size: 11px; }
+    .stack { display: flex; flex-direction: column; gap: 10px; }
+    .flex { display: flex; align-items: center; gap: 8px; }
+    .grow { flex: 1; min-width: 0; }
+  </style>
+</head>
+<body>
+  <div class="device">
+    <!-- 顶栏 -->
+    <header class="topbar">
+      <div class="topbar__brand">
+        <div class="topbar__logo">KP</div>
+        <span class="topbar__title" id="topbarTitle">自动化交易</span>
+      </div>
+      <div class="topbar__actions">
+        <button class="icon-btn" id="langBtn" aria-label="切换语言">EN</button>
+        <button class="icon-btn icon-btn--dot" aria-label="通知">🔔</button>
+        <button class="icon-btn" id="themeBtn" aria-label="切换主题">☾</button>
+      </div>
+    </header>
+
+    <aside class="prototype-notice" role="note">
+      本页面为产品交互原型，账户、交易和收益数据均为演示样本，不构成投资建议，也不具备真实下单能力。
+    </aside>
+
+    <!-- 各屏内容：骨架占位，探查结果回来后填充真实字段 -->
+    <main id="screens">
+      <!-- ========== 自动化交易屏（单一币种只读监控台） ========== -->
+      <section class="screen is-active" data-screen="autotrade">
+        <!-- 合规焦点条：仅查看 · 不会自动下单 -->
+        <div class="flex" style="justify-content:space-between;padding:2px 2px 10px;">
+          <span class="tiny muted">行情、订单、持仓和风险状态会在本页同步</span>
+          <span class="badge badge--muted badge--square">仅查看 · 不会自动下单</span>
+        </div>
+
+        <!-- 币种 + 永续行情条 -->
+        <div class="card">
+          <div class="flex" style="justify-content:space-between;">
+            <button class="flex" style="background:none;border:0;color:inherit;cursor:pointer;">
+              <span class="item__ico" style="width:32px;height:32px;font-size:13px;">◎</span>
+              <span style="font-weight:800;font-size:16px;">ASTER-USDT <span class="tiny muted">永续</span></span>
+              <span class="tiny muted">▾</span>
+            </button>
+            <span class="badge badge--info">OKX 行情源</span>
+          </div>
+          <div class="flex" style="justify-content:space-between;margin-top:12px;">
+            <div><div class="kpi__value num" style="font-size:22px;">1.8624</div><div class="tiny pnl-pos num">+6.42% 今日</div></div>
+            <div class="spark" style="width:120px;">
+              <span style="height:40%"></span><span style="height:55%"></span><span style="height:48%"></span>
+              <span style="height:70%"></span><span style="height:62%"></span><span style="height:85%"></span>
+              <span style="height:78%"></span><span style="height:100%"></span>
+            </div>
+          </div>
+          <div class="rows" style="margin-top:10px;">
+            <div class="row"><span class="row__k">24h 成交额</span><span class="row__v num">2.14 亿 USDT</span></div>
+            <div class="row"><span class="row__k">资金费率</span><span class="row__v num">+0.0125% · 08:00 结算</span></div>
+          </div>
+          <div class="tiny muted" style="margin-top:8px;">图表为窄屏精简走势，完整 K 线、盘口在桌面工作台查看。</div>
+        </div>
+
+        <!-- 平台账户就绪卡（可展开明细） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">全部已启用平台账户</span><span class="sec__hint">各平台独立检查下单</span></div>
+          <div id="platformAccounts" class="stack"></div>
+        </div>
+
+        <!-- 待处理问题（阻塞态字典） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">待处理问题</span><span class="sec__link">刷新自动交易记录</span></div>
+          <div id="autotradeIssues" class="stack"></div>
+        </div>
+      </section>
+      <!-- ========== 动量雷达屏（观察，不代表买入建议） ========== -->
+      <section class="screen" data-screen="momentum">
+        <div class="flex" style="justify-content:space-between;padding:2px 2px 10px;">
+          <span class="tiny muted">候选币种按成交活跃度、波动和可交易状态排序</span>
+          <span class="badge badge--muted badge--square">信号待确认</span>
+        </div>
+
+        <!-- 统计条 -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+          <div class="kpi"><div class="kpi__label">异动事件</div><div class="kpi__value num">18</div></div>
+          <div class="kpi"><div class="kpi__label">进 Top50</div><div class="kpi__value num" style="color:var(--status-success);">5</div></div>
+          <div class="kpi"><div class="kpi__label">最大跃迁</div><div class="kpi__value num">+37</div></div>
+          <div class="kpi"><div class="kpi__label">交易链路</div><div class="kpi__value num" style="font-size:14px;">3·2·1</div><div class="kpi__sub">信号·任务·结果</div></div>
+        </div>
+
+        <div class="chips" style="margin-top:12px;">
+          <button class="chip is-active">全部异动</button>
+          <button class="chip">排名跃迁</button>
+          <button class="chip">Top50 进入</button>
+          <button class="chip">Top50 退出</button>
+        </div>
+
+        <!-- 待验证信号 -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">待验证信号</span><span class="sec__hint">只作观察，不代表买入建议</span></div>
+          <div id="radarCandidates" class="stack"></div>
+        </div>
+
+        <!-- 排名异动榜 -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">排名异动榜</span><span class="sec__link">刷新</span></div>
+          <div id="radarList" class="card"><div class="rows" id="radarRows"></div></div>
+        </div>
+      </section>
+      <!-- ========== 策略商城屏（策略×币种组合货架） ========== -->
+      <section class="screen" data-screen="marketplace">
+        <div class="flex" style="justify-content:space-between;padding:2px 2px 10px;">
+          <span class="tiny muted">订阅容量按“策略 × 币种”计算</span>
+          <span class="badge badge--info badge--square">会员优先</span>
+        </div>
+
+        <!-- 搜索 -->
+        <div class="card" style="padding:0;">
+          <input type="search" placeholder="搜索策略名称、交易对、周期、风险或关键词"
+            style="width:100%;height:46px;padding:0 16px;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;" />
+        </div>
+
+        <div class="chips" style="margin-top:12px;">
+          <button class="chip is-active">全部</button>
+          <button class="chip">动量突破</button>
+          <button class="chip">趋势跟随</button>
+          <button class="chip">低风险</button>
+          <button class="chip">全市场</button>
+        </div>
+
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">可订阅策略</span><span class="sec__hint">点开查看回测口径与证据</span></div>
+          <div id="strategyList" class="stack"></div>
+        </div>
+      </section>
+      <!-- ========== 新闻雷达屏 ========== -->
+      <section class="screen" data-screen="news">
+        <div class="card" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
+          <div class="tiny" style="color:var(--accent-strong);font-weight:700;letter-spacing:1px;">KLINEPULSE 事件雷达</div>
+          <div style="font-size:19px;font-weight:800;margin-top:5px;">市场事件雷达</div>
+          <div class="tiny muted" style="margin-top:6px;line-height:1.6;">汇总交易所公告、监管、安全和市场变化，说明可能影响、风险和下一步建议。</div>
+          <div class="tiny muted" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span>发现事件</span><span style="color:var(--accent);">→</span><span>判断影响</span>
+            <span style="color:var(--accent);">→</span><span>查看风险</span><span style="color:var(--accent);">→</span><span>给出下一步</span>
+          </div>
+        </div>
+
+        <!-- 态势统计条：最新/高影响/需检查/平均可信度 -->
+        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-top:10px;">
+          <div class="kpi"><div class="kpi__label">最新信息</div><div class="kpi__value num">42</div></div>
+          <div class="kpi"><div class="kpi__label">高影响</div><div class="kpi__value num" style="color:var(--status-warning);">7</div></div>
+          <div class="kpi"><div class="kpi__label">需检查</div><div class="kpi__value num" style="color:var(--accent-strong);">12</div></div>
+          <div class="kpi"><div class="kpi__label">平均可信度</div><div class="kpi__value num">78%</div></div>
+        </div>
+
+        <!-- 分类筛选 -->
+        <div class="chips" style="margin-top:12px;">
+          <button class="chip is-active">全部</button>
+          <button class="chip">交易所公告</button>
+          <button class="chip">监管·宏观</button>
+          <button class="chip">安全事件</button>
+          <button class="chip">ETF·机构</button>
+          <button class="chip">市场快讯</button>
+        </div>
+
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">今日重点</span><span class="sec__hint">按情报热度排序</span></div>
+          <div id="newsList" class="stack"></div>
+        </div>
+      </section>
+      <!-- ========== 用户中心屏（落地准备度仪表盘） ========== -->
+      <section class="screen" data-screen="user">
+        <!-- 账户 Hero：会员等级 + 组合权限概览 -->
+        <div class="card" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
+          <div class="flex" style="justify-content:space-between;">
+            <div class="flex">
+              <div class="item__ico" style="border-radius:50%;">Z</div>
+              <div>
+                <div style="font-weight:800;font-size:15px;">交易员 · zhao</div>
+                <span class="badge badge--info" style="margin-top:3px;">Pro 会员</span>
+              </div>
+            </div>
+            <span class="tiny sec__link">管理 →</span>
+          </div>
+          <div class="kpi-grid" style="margin-top:14px;">
+            <div class="kpi"><div class="kpi__label">已使用组合</div><div class="kpi__value num">3<span class="tiny muted"> / 10</span></div></div>
+            <div class="kpi"><div class="kpi__label">有效组合</div><div class="kpi__value num" style="color:var(--status-success);">2</div></div>
+            <div class="kpi"><div class="kpi__label">即将到期</div><div class="kpi__value num" style="color:var(--status-warning);">1</div></div>
+          </div>
+        </div>
+
+        <!-- 账户准备情况路径条：4 步 -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">账户准备情况</span><span class="sec__hint">先看会员和连接，再操作</span></div>
+          <div class="card">
+            <div class="rows">
+              <div class="row"><span class="row__k">① 会员权益</span><span class="badge badge--ok">已生效</span></div>
+              <div class="row"><span class="row__k">② 自动交易账户</span><span class="badge badge--warn">1 个待检查</span></div>
+              <div class="row"><span class="row__k">③ 待处理问题</span><span class="badge badge--danger badge--square">2 项</span></div>
+              <div class="row"><span class="row__k">④ 安全下一步</span><span class="badge badge--info">去连接 OKX</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 张统计卡 -->
+        <div class="sec">
+          <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
+            <div class="kpi"><div class="kpi__label">组合容量</div><div class="kpi__value num" style="font-size:15px;">3 / 10</div><div class="kpi__sub">还可扩展 7 个组合</div></div>
+            <div class="kpi"><div class="kpi__label">通知状态</div><div class="kpi__value" style="font-size:15px;">短信 + 邮件</div><div class="kpi__sub">已配置</div></div>
+            <div class="kpi"><div class="kpi__label">交易平台连接</div><div class="kpi__value num" style="font-size:15px;color:var(--status-warning);">1 / 3</div><div class="kpi__sub">1 个待检查</div></div>
+            <div class="kpi"><div class="kpi__label">本周动作</div><div class="kpi__value num" style="font-size:15px;">3</div><div class="kpi__sub">1 待续订 · 2 待连接</div></div>
+          </div>
+        </div>
+
+        <!-- 当前有效组合（策略×币种） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">我的订阅组合</span><span class="sec__link">查看全部</span></div>
+          <div id="userCombos" class="stack"></div>
+        </div>
+
+        <!-- 二级入口（桌面用户中心 7 分区） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">账户与设置</span></div>
+          <div class="card" style="padding:4px 14px;">
+            <div class="rows">
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">💳 会员权益</span><span class="tiny sec__link">Pro · 管理 →</span></button>
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🔗 交易平台连接</span><span class="badge badge--warn">1 / 3</span></button>
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🧾 我的订单</span><span class="tiny muted">1 待处理</span></button>
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🔔 通知设置</span><span class="badge badge--ok">短信+邮件</span></button>
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">👥 跟单观察</span><span class="tiny muted">仅供观察 →</span></button>
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🧠 AI 复盘</span><span class="tiny muted">仅提供分析 →</span></button>
+              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;"><span class="row__k" style="color:var(--text-primary);">⚙️ 用户信息</span><span class="tiny sec__link">→</span></button>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn--ghost btn--block" style="margin-top:12px;">退出登录</button>
+      </section>
+    </main>
+
+    <!-- 底部标签栏：5 个核心入口（跟单观察 / AI 复盘归入用户中心二级） -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab is-active" data-target="autotrade"><span class="tab__icon">⚡</span>交易</button>
+      <button class="tab" data-target="momentum"><span class="tab__icon">📡</span>雷达</button>
+      <button class="tab" data-target="marketplace"><span class="tab__icon">🧩</span>策略</button>
+      <button class="tab" data-target="news"><span class="tab__icon">📰</span>新闻</button>
+      <button class="tab" data-target="user"><span class="tab__icon">👤</span>我的</button>
+    </nav>
+  </div>
+
+  <script>
+    // ============ 多屏切换：底部标签栏驱动，同步顶栏标题 ============
+    (function () {
+      var titles = {
+        autotrade: '自动化交易', momentum: '动量雷达', marketplace: '策略商城',
+        news: '新闻雷达', user: '用户中心'
+      };
+      var tabbar = document.getElementById('tabbar');
+      var screens = document.querySelectorAll('.screen');
+      var titleEl = document.getElementById('topbarTitle');
+
+      function activate(target) {
+        screens.forEach(function (s) { s.classList.toggle('is-active', s.dataset.screen === target); });
+        tabbar.querySelectorAll('.tab').forEach(function (t) {
+          t.classList.toggle('is-active', t.dataset.target === target);
+        });
+        if (titles[target]) titleEl.textContent = titles[target];
+        window.scrollTo(0, 0);
+      }
+
+      tabbar.addEventListener('click', function (e) {
+        var btn = e.target.closest('.tab');
+        if (btn) { activate(btn.dataset.target); history.replaceState(null, '', '#' + btn.dataset.target); }
+      });
+
+      // URL hash 深链接：支持 #autotrade/#momentum/#marketplace/#news/#user 直接进入对应屏
+      var initial = (location.hash || '').replace('#', '');
+      if (titles[initial]) activate(initial);
+
+      // 主题切换（原型内联，仅演示深浅切换意图）
+      document.getElementById('themeBtn').addEventListener('click', function () {
+        var html = document.documentElement;
+        var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        this.textContent = next === 'dark' ? '☾' : '☀';
+      });
+
+      // chips 单选高亮（筛选演示）
+      document.querySelectorAll('.chips').forEach(function (group) {
+        group.addEventListener('click', function (e) {
+          var c = e.target.closest('.chip');
+          if (!c) return;
+          group.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('is-active'); });
+          c.classList.add('is-active');
+        });
+      });
+    })();
+
+    // ============ 新闻雷达：事件卡片数据渲染（占位样本，字段对齐 NewsAggregationItem） ============
+    (function () {
+      var dirMap = {
+        bullish: { cls: 'dir-long', label: '偏多', pre: '↑' },
+        bearish: { cls: 'dir-short', label: '偏空', pre: '↓' },
+        neutral: { cls: 'muted', label: '观察', pre: '•' }
+      };
+      var news = [
+        { lead: true, cat: '交易所公告', src: 'Binance', time: '15分钟内', at: '09-01 14:22',
+          title: 'Binance 将上线 ASTER 永续合约并开放最高 20 倍杠杆',
+          summary: '新永续合约上线通常带来短期流动性与波动上升，可作为动量策略候选，但需确认止损与仓位。',
+          symbol: 'ASTER-USDT', dir: 'bullish', tags: ['#上新', '#永续'], auto: true, impact: 0.86, conf: 0.81 },
+        { cat: '监管·宏观', src: 'SEC', time: '1小时内', at: '09-01 13:40',
+          title: '美国 SEC 推迟对某现货 ETF 的裁定至下月',
+          summary: '监管节奏推迟，短期不确定性上升。对相关标的偏中性，建议观察不急于进场。',
+          symbol: 'BTC-USDT', dir: 'neutral', tags: ['#监管', '#ETF'], auto: false, impact: 0.62, conf: 0.74 },
+        { cat: '安全事件', src: 'PeckShield', time: '4小时内', at: '09-01 10:15',
+          title: '某跨链桥检测到异常大额转出，官方暂停提现排查',
+          summary: '安全事件对关联代币偏空，波动风险高。除非有明确对冲计划，否则以规避为主。',
+          symbol: 'XBRIDGE-USDT', dir: 'bearish', tags: ['#安全', '#风险'], auto: false, impact: 0.79, conf: 0.68 }
+      ];
+      function fmt(p) { return Math.round(p * 100) + '%'; }
+      function prio(n) {
+        if (n.auto && n.impact >= 0.75) return { t: '高影响', c: 'badge--warn sq' };
+        if (n.auto) return { t: '可进一步检查', c: 'badge--info sq' };
+        return { t: '仅供观察', c: 'badge--muted sq' };
+      }
+      var newsHost = document.getElementById('newsList');
+      if (newsHost) newsHost.innerHTML = news.map(function (n) {
+        var d = dirMap[n.dir], p = prio(n);
+        return '<article class="card card--tap">'
+          + '<div class="flex" style="justify-content:space-between;">'
+          + '<span class="badge badge--muted">' + n.cat + ' · ' + n.src + '</span>'
+          + (n.lead ? '<span class="badge badge--warn badge--square">重点事件</span>' : '<span class="tiny muted">' + n.time + '</span>')
+          + '</div>'
+          + '<div class="item__title" style="white-space:normal;margin-top:9px;font-size:14.5px;line-height:1.4;">' + n.title + '</div>'
+          + '<div class="tiny muted" style="margin-top:7px;line-height:1.6;"><span class="badge badge--info" style="margin-right:6px;">AI 摘要</span>' + n.summary + '</div>'
+          + '<div class="flex" style="flex-wrap:wrap;gap:6px;margin-top:10px;">'
+          + '<span class="badge ' + (n.auto ? 'badge--info' : 'badge--muted') + '">' + (n.auto ? '可进一步检查' : '仅供观察') + '</span>'
+          + '<span class="badge badge--muted">' + n.symbol + '</span>'
+          + '<span class="badge badge--muted"><span class="' + d.cls + '">' + d.pre + ' ' + d.label + '</span></span>'
+          + n.tags.map(function (t) { return '<span class="tiny muted">' + t + '</span>'; }).join(' ')
+          + '</div>'
+          + '<div class="flex" style="justify-content:space-between;margin-top:11px;padding-top:10px;border-top:1px solid var(--border-subtle);">'
+          + '<span class="badge ' + p.c.replace(' sq', '') + ' badge--square">' + p.t + '</span>'
+          + '<span class="tiny muted num">热度 ' + fmt(n.impact) + ' · 可信度 ' + fmt(n.conf) + '</span>'
+          + '</div>'
+          + '<div class="flex" style="justify-content:space-between;margin-top:10px;">'
+          + '<span class="tiny muted">这条信息对你意味着什么</span>'
+          + '<span class="sec__link">查看情报 →</span>'
+          + '</div>'
+          + '</article>';
+      }).join('');
+    })();
+
+    // ============ 自动化交易：平台账户就绪卡 + 阻塞问题（字段对齐 ComboAutoTradePlatformStatus / AUTO_TRADE_ISSUE_SCENARIO） ============
+    (function () {
+      var platforms = [
+        { code: 'OKX', mask: '****3F2A', ready: true,
+          note: '账户满足执行条件', pos: '1', order: '0', pnl: '+38.20' },
+        { code: 'BN', name: '币安', mask: '****9C10', ready: false,
+          note: '账户暂不能执行 · 连接待验证', pos: '0', order: '0', pnl: '—' }
+      ];
+      var pHost = document.getElementById('platformAccounts');
+      if (pHost) pHost.innerHTML = platforms.map(function (p) {
+        return '<div class="card">'
+          + '<div class="flex" style="justify-content:space-between;">'
+          + '<div class="flex"><span class="item__ico" style="width:32px;height:32px;font-size:12px;">' + p.code + '</span>'
+          + '<div><div style="font-weight:700;">' + (p.name || p.code) + '</div><div class="tiny muted num">' + p.mask + '</div></div></div>'
+          + '<span class="badge ' + (p.ready ? 'badge--ok' : 'badge--warn badge--square') + '">' + (p.ready ? '账户满足执行条件' : '账户暂不能执行') + '</span>'
+          + '</div>'
+          + '<div class="tiny muted" style="margin-top:8px;">' + p.note + '</div>'
+          + '<div class="kpi-grid" style="margin-top:10px;">'
+          + '<div class="kpi"><div class="kpi__label">当前持仓</div><div class="kpi__value num" style="font-size:15px;">' + p.pos + '</div></div>'
+          + '<div class="kpi"><div class="kpi__label">挂单</div><div class="kpi__value num" style="font-size:15px;">' + p.order + '</div></div>'
+          + '<div class="kpi"><div class="kpi__label">今日盈亏</div><div class="kpi__value num ' + (p.pnl.indexOf('+') === 0 ? 'pnl-pos' : '') + '" style="font-size:15px;">' + p.pnl + '</div></div>'
+          + '</div>'
+          + '<button class="btn btn--ghost btn--sm btn--block" style="margin-top:10px;">展开明细（持仓 / 成交 / 资金费率）</button>'
+          + '</div>';
+      }).join('');
+
+      // 阻塞态字典：直接取自真实 AUTO_TRADE_ISSUE_SCENARIO 的 label / actionLabel
+      var issues = [
+        { sev: 'danger', label: '这次信号缺少止损设置，因此没有下单', combo: 'ASTER-USDT · Market Velocity', action: '补全止损配置' },
+        { sev: 'warn', label: '交易平台连接未通过', combo: '币安 · 全部组合', action: '检查交易平台连接' }
+      ];
+      var iHost = document.getElementById('autotradeIssues');
+      if (iHost) iHost.innerHTML = issues.map(function (it) {
+        return '<div class="card card--tap">'
+          + '<div class="flex" style="justify-content:space-between;gap:10px;">'
+          + '<span class="badge badge--' + it.sev + ' badge--square">需处理</span>'
+          + '<span class="tiny muted">' + it.combo + '</span></div>'
+          + '<div style="font-size:13px;font-weight:600;margin-top:8px;line-height:1.45;">' + it.label + '</div>'
+          + '<button class="btn btn--secondary btn--sm" style="margin-top:10px;">' + it.action + '</button>'
+          + '</div>';
+      }).join('');
+    })();
+
+    // ============ 动量雷达：待验证信号 + 排名异动榜（字段对齐 MarketVelocityCandidate / RadarItem） ============
+    (function () {
+      // candidate：readiness=blocked/review_ready/ready，含 blocker_codes 与决策提示
+      var candidates = [
+        { symbol: 'PENGU-USDT', ex: 'OKX', tone: '放量上涨', dir: 'up', readiness: 'review_ready',
+          hint: '加入观察，等待价格和策略确认', blocker: '策略条件待确认' },
+        { symbol: 'WIF-USDT', ex: 'Binance', tone: '跃迁', dir: 'up', readiness: 'blocked',
+          hint: '成交额排名上升但价格证据不足，先加入观察等待二次确认', blocker: '交易对待确认' }
+      ];
+      var readyMap = {
+        blocked: { c: 'badge--danger badge--square', t: '等待确认' },
+        review_ready: { c: 'badge--info', t: '可继续观察' },
+        ready: { c: 'badge--ok', t: '可深入研究' }
+      };
+      var cHost = document.getElementById('radarCandidates');
+      if (cHost) cHost.innerHTML = candidates.map(function (c) {
+        var r = readyMap[c.readiness];
+        return '<div class="card">'
+          + '<div class="flex" style="justify-content:space-between;">'
+          + '<div class="flex"><span class="item__ico" style="width:34px;height:34px;font-size:14px;">' + (c.dir === 'up' ? '📈' : '📉') + '</span>'
+          + '<div><div style="font-weight:700;">' + c.symbol + '</div><div class="tiny muted">' + c.ex + ' · ' + c.tone + '</div></div></div>'
+          + '<span class="badge ' + r.c + '">' + r.t + '</span></div>'
+          + '<div class="tiny" style="margin-top:9px;line-height:1.5;">' + c.hint + '</div>'
+          + '<div class="flex" style="justify-content:space-between;margin-top:10px;">'
+          + '<span class="badge badge--muted badge--square">' + c.blocker + '</span>'
+          + '<span class="flex" style="gap:8px;"><span class="sec__link">加入观察</span><span class="sec__link">查看价格</span></span>'
+          + '</div></div>';
+      }).join('');
+
+      // 排名异动榜：old_rank→new_rank + 涨跌 + 成交额
+      var ranks = [
+        { s: 'PENGU', from: 61, to: 24, chg: '+18.6%', vol: '9,820万' },
+        { s: 'WIF', from: 33, to: 19, chg: '+11.2%', vol: '1.4亿' },
+        { s: 'JUP', from: 15, to: 42, chg: '-8.4%', vol: '7,310万' }
+      ];
+      var rHost = document.getElementById('radarRows');
+      if (rHost) rHost.innerHTML = ranks.map(function (r) {
+        var up = r.chg.indexOf('-') !== 0;
+        return '<div class="row">'
+          + '<span class="row__k" style="display:flex;align-items:center;gap:8px;"><b style="color:var(--text-primary);">' + r.s + '</b>'
+          + '<span class="tiny num muted">#' + r.from + ' → #' + r.to + '</span></span>'
+          + '<span class="row__v"><span class="num ' + (up ? 'pnl-pos' : 'pnl-neg') + '">' + (up ? '↑' : '↓') + ' ' + r.chg + '</span>'
+          + ' <span class="tiny muted num">' + r.vol + '</span></span></div>';
+      }).join('');
+    })();
+
+    // ============ 策略商城：策略卡（五指标 + 风险等级 + 适用币种，字段对齐 StrategyProductCard） ============
+    (function () {
+      var strategies = [
+        { name: 'Market Velocity 动量突破', cat: '动量突破', risk: '中', source: '精选表现',
+          ret: '+142.8%', sharpe: '1.86', trades: '318', win: '54%', dd: '-12.4%',
+          symbols: '全市场逐信号', tf: '15m / 1H' },
+        { name: 'Vegas 趋势跟随', cat: '趋势跟随', risk: '中低', source: '历史表现',
+          ret: '+68.5%', sharpe: '2.12', trades: '96', win: '61%', dd: '-8.9%',
+          symbols: 'BTC · ETH · SOL', tf: '4H / 1D' },
+        { name: '波动收敛反转', cat: '反转', risk: '高', source: '待更新',
+          ret: '—', sharpe: '—', trades: '—', win: '—', dd: '—',
+          symbols: 'BTC-USDT', tf: '1H' }
+      ];
+      var riskTone = { '低': 'badge--ok', '中低': 'badge--ok', '中': 'badge--warn', '高': 'badge--danger badge--square' };
+      var sHost = document.getElementById('strategyList');
+      if (sHost) sHost.innerHTML = strategies.map(function (s) {
+        var pending = s.ret === '—';
+        return '<article class="card card--tap">'
+          + '<div class="flex" style="justify-content:space-between;gap:8px;">'
+          + '<span style="font-weight:800;font-size:14.5px;line-height:1.35;">' + s.name + '</span>'
+          + '<span class="badge ' + (riskTone[s.risk] || 'badge--muted') + '">风险 ' + s.risk + '</span></div>'
+          + '<div class="flex" style="gap:6px;margin-top:7px;flex-wrap:wrap;">'
+          + '<span class="badge badge--muted">' + s.cat + '</span>'
+          + '<span class="tiny muted">适用 ' + s.symbols + ' · ' + s.tf + '</span></div>'
+          + (pending
+              ? '<div class="tiny muted" style="margin-top:11px;padding:10px;border-radius:10px;background:var(--bg-subtle);">历史表现补齐后展示收益、夏普和资金曲线。</div>'
+              : '<div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-top:11px;gap:5px;">'
+                + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">收益</div><div class="kpi__value num pnl-pos" style="font-size:12.5px;">' + s.ret + '</div></div>'
+                + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">夏普</div><div class="kpi__value num" style="font-size:12.5px;">' + s.sharpe + '</div></div>'
+                + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">样本</div><div class="kpi__value num" style="font-size:12.5px;">' + s.trades + '</div></div>'
+                + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">胜率</div><div class="kpi__value num" style="font-size:12.5px;">' + s.win + '</div></div>'
+                + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">回撤</div><div class="kpi__value num pnl-neg" style="font-size:12.5px;">' + s.dd + '</div></div>'
+                + '</div>')
+          + '<div class="flex" style="justify-content:space-between;margin-top:10px;">'
+          + '<span class="badge ' + (s.source === '精选表现' ? 'badge--info' : 'badge--muted') + '">' + s.source + '</span>'
+          + '<span class="sec__link">查看订阅详情 →</span></div>'
+          + '</article>';
+      }).join('');
+    })();
+
+    // ============ 用户中心：订阅组合卡（组合 = 策略 × 币种，字段对齐 AssetCenterCombo） ============
+    (function () {
+      var combos = [
+        { strategy: 'Market Velocity', symbol: 'ASTER-USDT', ex: 'OKX',
+          status: 'active', mode: '自动交易', readiness: 'attention',
+          note: '1 项待处理：这次信号缺少止损设置', expires: '32 天后到期' },
+        { strategy: 'Vegas 趋势跟随', symbol: 'BTC-USDT', ex: '—',
+          status: 'expiring_soon', mode: '仅接收信号', readiness: 'ready',
+          note: '信号正常推送', expires: '5 天后到期' }
+      ];
+      var stMap = {
+        active: { c: 'badge--ok', t: '生效中' },
+        expiring_soon: { c: 'badge--warn', t: '即将到期' },
+        expired: { c: 'badge--danger badge--square', t: '已过期' },
+        blocked_by_membership: { c: 'badge--danger badge--square', t: '会员受限' }
+      };
+      var rdMap = {
+        ready: { c: 'badge--ok', t: '可交易' },
+        attention: { c: 'badge--warn', t: '需确认' },
+        blocked: { c: 'badge--danger badge--square', t: '已阻塞' }
+      };
+      var cbHost = document.getElementById('userCombos');
+      if (cbHost) cbHost.innerHTML = combos.map(function (c) {
+        var st = stMap[c.status], rd = rdMap[c.readiness];
+        return '<div class="card">'
+          + '<div class="flex" style="justify-content:space-between;">'
+          + '<div><div style="font-weight:800;font-size:14px;">' + c.strategy + ' <span class="muted">×</span> ' + c.symbol + '</div>'
+          + '<div class="tiny muted" style="margin-top:3px;">' + c.mode + (c.ex !== '—' ? ' · ' + c.ex : '') + '</div></div>'
+          + '<span class="badge ' + st.c + '">' + st.t + '</span></div>'
+          + '<div class="flex" style="gap:6px;margin-top:9px;">'
+          + '<span class="badge ' + rd.c + '">' + rd.t + '</span>'
+          + '<span class="tiny muted" style="align-self:center;">' + c.expires + '</span></div>'
+          + '<div class="tiny" style="margin-top:9px;color:' + (c.readiness === 'ready' ? 'var(--text-muted)' : 'var(--status-warning)') + ';line-height:1.5;">' + c.note + '</div>'
+          + '<div class="flex" style="gap:8px;margin-top:11px;">'
+          + '<button class="btn btn--secondary btn--sm grow">' + (c.readiness === 'ready' ? '续订' : '立即处理') + '</button>'
+          + '<button class="btn btn--ghost btn--sm">组合管理 ▾</button></div>'
+          + '</div>';
+      }).join('');
+    })();
+  </script>
+</body>
+</html>
