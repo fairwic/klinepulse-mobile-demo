@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#05070a" />
+  <meta name="theme-color" content="#060606" />
   <title>KlinePulse · 移动工作台</title>
   <!-- 移动端 H5 静态原型：单文件多屏切换，沿用桌面端 operator 深色 token。
        仅用于视觉与交互评审，数据为占位样本，无真实下单能力。
@@ -11,28 +11,31 @@
   <style>
     /* ============ 设计 token：复用 appTheme.css 深色口径 ============ */
     :root {
-      --bg-page: #05070a;
-      --bg-surface: #0b1116;
-      --bg-subtle: #111a20;
-      --bg-elevated: #162229;
-      --text-primary: #f8fafc;
-      --text-secondary: #d7e1e4;
-      --text-muted: #9fb2b8;
-      --border-subtle: rgba(248, 250, 252, 0.14);
-      --border-strong: rgba(158, 230, 220, 0.36);
-      --accent: #62d8cf;
-      --accent-strong: #9ee6dc;
-      --status-success: #79e6a7;
-      --status-warning: #f2c879;
-      --status-danger: #f87171;
-      --status-info: #9ee6dc;
-      --btn-primary-bg: #9ee6dc;
-      --btn-primary-text: #061219;
+      /* 暗金操作台：碳灰黑底 + 稀缺琥珀金强调（金色越少越贵） */
+      --bg-page: #060606;
+      --bg-surface: #121212;
+      --bg-subtle: #171614;
+      --bg-elevated: #1c1b18;
+      --text-primary: #f6f4f0;
+      --text-secondary: #c9c3b8;
+      --text-muted: #a19b90;
+      --border-subtle: rgba(246, 244, 240, 0.10);
+      --border-strong: rgba(232, 180, 92, 0.42);
+      --accent: #e8b45c;          /* 琥珀金：唯一稀缺强调 */
+      --accent-strong: #f2c879;   /* 亮金：焦点/高亮 */
+      --accent-dim: rgba(232, 180, 92, 0.14);
+      --status-success: #63d69a;  /* 涨 / 多 */
+      --status-warning: #e8b45c;  /* 注意（复用金调） */
+      --status-danger: #f0645b;   /* 跌 / 空 / 阻塞 */
+      --status-info: #7fb2c9;     /* 冷青：中性信息 */
+      --btn-primary-bg: #e8b45c;
+      --btn-primary-text: #1a1206;
       --radius-card: 16px;
       --radius-pill: 999px;
-      --shadow-card: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --shadow-card: 0 12px 34px rgba(0, 0, 0, 0.55);
+      --glow-gold: 0 0 0 1px rgba(232, 180, 92, 0.22), 0 8px 22px rgba(232, 180, 92, 0.08);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --tabbar-h: 62px;
+      --tabbar-h: 64px;
       --topbar-h: 52px;
     }
 
@@ -58,6 +61,18 @@
       background: var(--bg-page);
       overflow: hidden;
     }
+    /* 顶部极淡金色氛围光，增强纵深、避免纯黑发死 */
+    .device::before {
+      content: "";
+      position: absolute;
+      top: -120px; left: 50%;
+      width: 380px; height: 300px;
+      transform: translateX(-50%);
+      background: radial-gradient(ellipse at center, rgba(232, 180, 92, 0.10), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .topbar, main { position: relative; z-index: 1; }
 
     @media (prefers-reduced-motion: reduce) {
       * { animation: none !important; transition: none !important; }
@@ -80,10 +95,12 @@
     }
     .topbar__brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
     .topbar__logo {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+      width: 30px; height: 30px; border-radius: 9px;
+      background: linear-gradient(140deg, #f2c879, #d19a3f);
       display: grid; place-items: center;
-      color: #061219; font-weight: 800; font-size: 13px; flex: 0 0 auto;
+      color: #1a1206; font-weight: 800; font-size: 12px; flex: 0 0 auto;
+      box-shadow: 0 2px 10px rgba(232, 180, 92, 0.35);
+      letter-spacing: -0.5px;
     }
     .topbar__title { font-weight: 700; font-size: 15px; letter-spacing: 0.2px; white-space: nowrap; }
     .topbar__actions { display: flex; align-items: center; gap: 8px; }
@@ -97,7 +114,12 @@
     .icon-btn--dot::after {
       content: ""; position: absolute; top: 7px; right: 8px;
       width: 6px; height: 6px; border-radius: 50%; background: var(--status-danger);
+      box-shadow: 0 0 0 2px var(--bg-page);
     }
+    /* 统一 SVG 图标尺寸类 */
+    .svg-ic { width: 20px; height: 20px; display: inline-block; vertical-align: middle; flex: 0 0 auto; }
+    .svg-ic--sm { width: 16px; height: 16px; }
+    .svg-ic--lg { width: 22px; height: 22px; }
 
     /* ============ 屏容器 ============ */
     .screen {
@@ -109,11 +131,13 @@
     @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
     .prototype-notice {
+      position: relative;
+      z-index: 1;
       margin: 12px 14px 0;
       padding: 10px 12px;
-      border: 1px solid rgba(242, 200, 121, 0.32);
+      border: 1px solid rgba(232, 180, 92, 0.32);
       border-radius: 12px;
-      background: rgba(242, 200, 121, 0.08);
+      background: rgba(232, 180, 92, 0.08);
       color: var(--text-secondary);
       font-size: 11px;
       line-height: 1.55;
@@ -137,14 +161,25 @@
       border-top: 1px solid var(--border-subtle);
     }
     .tab {
+      position: relative;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 3px; border: 0; background: none; cursor: pointer;
+      gap: 4px; border: 0; background: none; cursor: pointer;
       color: var(--text-muted); font-size: 10.5px; font-weight: 600;
-      padding-top: 6px;
+      padding-top: 8px;
+      transition: color 160ms ease;
     }
-    .tab__icon { font-size: 19px; line-height: 1; }
+    .tab__icon { width: 21px; height: 21px; color: currentColor; }
+    /* 激活态顶部金色指示条 */
+    .tab::before {
+      content: ""; position: absolute; top: 0; left: 50%;
+      width: 22px; height: 2.5px; border-radius: 999px;
+      background: var(--accent-strong); opacity: 0;
+      transform: translateX(-50%) scaleX(0.3);
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
     .tab.is-active { color: var(--accent-strong); }
-    .tab.is-active .tab__icon { filter: drop-shadow(0 0 6px rgba(158, 230, 220, 0.45)); }
+    .tab.is-active::before { opacity: 1; transform: translateX(-50%) scaleX(1); }
+    .tab.is-active .tab__icon { filter: drop-shadow(0 0 7px rgba(232, 180, 92, 0.5)); }
 
     /* ============ 占位提示（骨架阶段，后续替换为真实内容） ============ */
     .placeholder {
@@ -167,14 +202,23 @@
 
     /* 卡片：所有信息块的基座 */
     .card {
+      position: relative;
       background: var(--bg-surface);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-card);
       padding: 14px;
+      box-shadow: 0 1px 0 rgba(246, 244, 240, 0.03) inset, var(--shadow-card);
     }
     .card + .card { margin-top: 10px; }
     .card--tap { cursor: pointer; transition: border-color 160ms ease, transform 120ms ease; }
     .card--tap:active { transform: scale(0.99); border-color: var(--border-strong); }
+    /* 焦点卡：顶部一道金色高光，用于 Hero / 重点事件 */
+    .card--focus { border-color: rgba(232, 180, 92, 0.28); box-shadow: var(--glow-gold), var(--shadow-card); }
+    .card--focus::after {
+      content: ""; position: absolute; inset: 0 0 auto 0; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(242, 200, 121, 0.6), transparent);
+      border-radius: var(--radius-card) var(--radius-card) 0 0;
+    }
 
     /* 状态徽章：非纯色表达（形状/文字/图标前缀共同承担语义，满足无障碍） */
     .badge {
@@ -184,10 +228,10 @@
       border: 1px solid transparent; white-space: nowrap;
     }
     .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-    .badge--ok { color: var(--status-success); background: rgba(121, 230, 167, 0.12); border-color: rgba(121, 230, 167, 0.3); }
-    .badge--warn { color: var(--status-warning); background: rgba(242, 200, 121, 0.12); border-color: rgba(242, 200, 121, 0.3); }
-    .badge--danger { color: var(--status-danger); background: rgba(248, 113, 113, 0.12); border-color: rgba(248, 113, 113, 0.32); }
-    .badge--info { color: var(--status-info); background: rgba(158, 230, 220, 0.1); border-color: rgba(158, 230, 220, 0.28); }
+    .badge--ok { color: var(--status-success); background: rgba(99, 214, 154, 0.12); border-color: rgba(99, 214, 154, 0.3); }
+    .badge--warn { color: var(--status-warning); background: rgba(232, 180, 92, 0.13); border-color: rgba(232, 180, 92, 0.32); }
+    .badge--danger { color: var(--status-danger); background: rgba(240, 100, 91, 0.12); border-color: rgba(240, 100, 91, 0.34); }
+    .badge--info { color: var(--status-info); background: rgba(127, 178, 201, 0.12); border-color: rgba(127, 178, 201, 0.3); }
     .badge--muted { color: var(--text-muted); background: var(--bg-subtle); border-color: var(--border-subtle); }
     /* 方形徽章变体用于"阻塞/需操作"，形状差异强化非纯色语义 */
     .badge--square { border-radius: 6px; }
@@ -202,10 +246,10 @@
     }
     .btn--block { width: 100%; }
     .btn--sm { min-height: 36px; padding: 0 12px; font-size: 12.5px; border-radius: 10px; }
-    .btn--primary { background: var(--btn-primary-bg); color: var(--btn-primary-text); border-color: var(--btn-primary-bg); }
+    .btn--primary { background: linear-gradient(140deg, #f2c879, #dfa848); color: var(--btn-primary-text); border-color: transparent; box-shadow: 0 6px 16px rgba(232, 180, 92, 0.22); }
     .btn--secondary { background: var(--bg-subtle); color: var(--text-primary); border-color: var(--border-subtle); }
     .btn--ghost { background: transparent; color: var(--text-secondary); border-color: var(--border-subtle); }
-    .btn--danger { background: rgba(248, 113, 113, 0.14); color: var(--status-danger); border-color: rgba(248, 113, 113, 0.4); }
+    .btn--danger { background: rgba(240, 100, 91, 0.14); color: var(--status-danger); border-color: rgba(240, 100, 91, 0.4); }
     .btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
 
     /* 数据行：左标签右数值，交易界面高频布局 */
@@ -217,6 +261,16 @@
     .row:last-child { border-bottom: 0; }
     .row__k { font-size: 12px; color: var(--text-muted); }
     .row__v { font-size: 13px; font-weight: 600; color: var(--text-primary); text-align: right; }
+
+    /* 用户中心二级入口行 */
+    .nav-row {
+      width: 100%; background: none; border: 0; cursor: pointer; color: inherit;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: padding-left 140ms ease;
+    }
+    .nav-row:active { padding-left: 4px; }
+    .nav-row__k { display: flex; align-items: center; gap: 11px; font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
+    .nav-ic { color: var(--accent); }
     .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 
     /* 方向色：多空 / 盈亏，带符号前缀不靠纯色 */
@@ -231,6 +285,9 @@
     .kpi__label { font-size: 10.5px; color: var(--text-muted); margin-bottom: 4px; }
     .kpi__value { font-size: 17px; font-weight: 800; letter-spacing: -0.2px; }
     .kpi__sub { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    /* 重点 KPI：金色描边 + 底纹，用于首屏最关键的一个数字 */
+    .kpi--primary { background: var(--accent-dim); border-color: rgba(232, 180, 92, 0.3); }
+    .kpi--primary .kpi__value { color: var(--accent-strong); }
 
     /* 准备度条：分段式，用达成/未达成分段而非单纯进度长度传递状态 */
     .ready { display: flex; flex-direction: column; gap: 8px; }
@@ -247,7 +304,7 @@
       flex: 0 0 auto; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
       background: var(--bg-subtle); color: var(--text-secondary); border: 1px solid var(--border-subtle); cursor: pointer;
     }
-    .chip.is-active { background: rgba(158, 230, 220, 0.14); color: var(--accent-strong); border-color: var(--border-strong); }
+    .chip.is-active { background: var(--accent-dim); color: var(--accent-strong); border-color: var(--border-strong); }
 
     /* 列表项：策略/币种/新闻通用行卡 */
     .item { display: flex; align-items: center; gap: 11px; padding: 12px 0; border-bottom: 1px solid var(--border-subtle); }
@@ -257,6 +314,8 @@
       display: grid; place-items: center; font-size: 15px; font-weight: 800;
       background: var(--bg-subtle); border: 1px solid var(--border-subtle); color: var(--accent-strong);
     }
+    .item__ico.ico-up { color: var(--status-success); background: rgba(99, 214, 154, 0.1); border-color: rgba(99, 214, 154, 0.28); }
+    .item__ico.ico-down { color: var(--status-danger); background: rgba(240, 100, 91, 0.1); border-color: rgba(240, 100, 91, 0.28); }
     .item__body { flex: 1; min-width: 0; }
     .item__title { font-size: 13.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item__sub { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
@@ -273,7 +332,7 @@
 
     /* 迷你走势占位：窄屏用轻量趋势条替代完整 K 线图 */
     .spark { display: flex; align-items: flex-end; gap: 2px; height: 34px; }
-    .spark span { flex: 1; background: linear-gradient(180deg, var(--accent-strong), rgba(98, 216, 207, 0.25)); border-radius: 2px 2px 0 0; }
+    .spark span { flex: 1; background: linear-gradient(180deg, var(--status-success), rgba(99, 214, 154, 0.18)); border-radius: 2px 2px 0 0; }
 
     .muted { color: var(--text-muted); }
     .tiny { font-size: 11px; }
@@ -284,6 +343,28 @@
 </head>
 <body>
   <div class="device">
+    <!-- ===== SVG 图标 sprite：统一 24 viewBox、stroke=currentColor、线性 operator 质感 ===== -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></symbol>
+        <symbol id="i-radar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12 4.5 6.5"/><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 8a4 4 0 1 0 4 4"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/></symbol>
+        <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></symbol>
+        <symbol id="i-news" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h9a2 2 0 0 1 2 2v12a2 2 0 0 0 2 2H6a2 2 0 0 1-2-2V4z"/><path d="M8 8h5M8 11.5h5M8 15h3"/><path d="M16 9h2a1 1 0 0 1 1 1v8a2 2 0 0 1-2 2"/></symbol>
+        <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20a2 2 0 0 0 4 0"/></symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+        <symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18" stroke-linecap="round"/></symbol>
+        <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"/><path d="M11 6.5 12.5 5a4 4 0 0 1 5.7 5.7l-1.5 1.5"/><path d="M13 17.5 11.5 19a4 4 0 0 1-5.7-5.7l1.5-1.5"/></symbol>
+        <symbol id="i-receipt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21z"/><path d="M8.5 8h7M8.5 12h7"/></symbol>
+        <symbol id="i-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5.8"/><path d="M17 14.5a5.5 5.5 0 0 1 3.5 4.5"/></symbol>
+        <symbol id="i-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 4A2.5 2.5 0 0 0 7 6.5 2.5 2.5 0 0 0 5 9a2.5 2.5 0 0 0 .5 4.5A2.5 2.5 0 0 0 8 18a2 2 0 0 0 4 0V4.5A.5.5 0 0 0 11.5 4z"/><path d="M14 6.5A2.5 2.5 0 0 1 17 9a2.5 2.5 0 0 1 2 2.5"/></symbol>
+        <symbol id="i-gear" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
+        <symbol id="i-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/></symbol>
+      </defs>
+    </svg>
+
     <!-- 顶栏 -->
     <header class="topbar">
       <div class="topbar__brand">
@@ -291,9 +372,9 @@
         <span class="topbar__title" id="topbarTitle">自动化交易</span>
       </div>
       <div class="topbar__actions">
-        <button class="icon-btn" id="langBtn" aria-label="切换语言">EN</button>
-        <button class="icon-btn icon-btn--dot" aria-label="通知">🔔</button>
-        <button class="icon-btn" id="themeBtn" aria-label="切换主题">☾</button>
+        <button class="icon-btn" id="langBtn" aria-label="切换语言" style="font-size:12px;font-weight:700;">EN</button>
+        <button class="icon-btn icon-btn--dot" aria-label="通知"><svg class="svg-ic svg-ic--sm"><use href="#i-bell"/></svg></button>
+        <button class="icon-btn" id="themeBtn" aria-label="切换主题"><svg class="svg-ic svg-ic--sm"><use href="#i-moon"/></svg></button>
       </div>
     </header>
 
@@ -312,12 +393,12 @@
         </div>
 
         <!-- 币种 + 永续行情条 -->
-        <div class="card">
+        <div class="card card--focus">
           <div class="flex" style="justify-content:space-between;">
             <button class="flex" style="background:none;border:0;color:inherit;cursor:pointer;">
-              <span class="item__ico" style="width:32px;height:32px;font-size:13px;">◎</span>
+              <span class="item__ico" style="width:32px;height:32px;"><svg class="svg-ic svg-ic--sm"><use href="#i-coin"/></svg></span>
               <span style="font-weight:800;font-size:16px;">ASTER-USDT <span class="tiny muted">永续</span></span>
-              <span class="tiny muted">▾</span>
+              <svg class="svg-ic svg-ic--sm" style="transform:rotate(90deg);color:var(--text-muted);"><use href="#i-chevron"/></svg>
             </button>
             <span class="badge badge--info">OKX 行情源</span>
           </div>
@@ -390,9 +471,10 @@
         </div>
 
         <!-- 搜索 -->
-        <div class="card" style="padding:0;">
+        <div class="card flex" style="padding:0 14px;gap:10px;">
+          <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-search"/></svg>
           <input type="search" placeholder="搜索策略名称、交易对、周期、风险或关键词"
-            style="width:100%;height:46px;padding:0 16px;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;" />
+            style="flex:1;height:46px;padding:0;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;" />
         </div>
 
         <div class="chips" style="margin-top:12px;">
@@ -410,7 +492,7 @@
       </section>
       <!-- ========== 新闻雷达屏 ========== -->
       <section class="screen" data-screen="news">
-        <div class="card" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
+        <div class="card card--focus" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
           <div class="tiny" style="color:var(--accent-strong);font-weight:700;letter-spacing:1px;">KLINEPULSE 事件雷达</div>
           <div style="font-size:19px;font-weight:800;margin-top:5px;">市场事件雷达</div>
           <div class="tiny muted" style="margin-top:6px;line-height:1.6;">汇总交易所公告、监管、安全和市场变化，说明可能影响、风险和下一步建议。</div>
@@ -446,10 +528,10 @@
       <!-- ========== 用户中心屏（落地准备度仪表盘） ========== -->
       <section class="screen" data-screen="user">
         <!-- 账户 Hero：会员等级 + 组合权限概览 -->
-        <div class="card" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
+        <div class="card card--focus" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
           <div class="flex" style="justify-content:space-between;">
             <div class="flex">
-              <div class="item__ico" style="border-radius:50%;">Z</div>
+              <div class="item__ico" style="border-radius:50%;background:linear-gradient(140deg,#f2c879,#d19a3f);color:#1a1206;border:0;">Z</div>
               <div>
                 <div style="font-weight:800;font-size:15px;">交易员 · zhao</div>
                 <span class="badge badge--info" style="margin-top:3px;">Pro 会员</span>
@@ -458,7 +540,7 @@
             <span class="tiny sec__link">管理 →</span>
           </div>
           <div class="kpi-grid" style="margin-top:14px;">
-            <div class="kpi"><div class="kpi__label">已使用组合</div><div class="kpi__value num">3<span class="tiny muted"> / 10</span></div></div>
+            <div class="kpi kpi--primary"><div class="kpi__label">已使用组合</div><div class="kpi__value num">3<span class="tiny muted"> / 10</span></div></div>
             <div class="kpi"><div class="kpi__label">有效组合</div><div class="kpi__value num" style="color:var(--status-success);">2</div></div>
             <div class="kpi"><div class="kpi__label">即将到期</div><div class="kpi__value num" style="color:var(--status-warning);">1</div></div>
           </div>
@@ -498,13 +580,13 @@
           <div class="sec__head"><span class="sec__title">账户与设置</span></div>
           <div class="card" style="padding:4px 14px;">
             <div class="rows">
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">💳 会员权益</span><span class="tiny sec__link">Pro · 管理 →</span></button>
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🔗 交易平台连接</span><span class="badge badge--warn">1 / 3</span></button>
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🧾 我的订单</span><span class="tiny muted">1 待处理</span></button>
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🔔 通知设置</span><span class="badge badge--ok">短信+邮件</span></button>
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">👥 跟单观察</span><span class="tiny muted">仅供观察 →</span></button>
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;border-bottom:1px solid var(--border-subtle);"><span class="row__k" style="color:var(--text-primary);">🧠 AI 复盘</span><span class="tiny muted">仅提供分析 →</span></button>
-              <button class="row" style="background:none;border:0;width:100%;cursor:pointer;color:inherit;"><span class="row__k" style="color:var(--text-primary);">⚙️ 用户信息</span><span class="tiny sec__link">→</span></button>
+              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-card"/></svg>会员权益</span><span class="tiny sec__link">Pro · 管理 →</span></button>
+              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-link"/></svg>交易平台连接</span><span class="badge badge--warn">1 / 3</span></button>
+              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-receipt"/></svg>我的订单</span><span class="tiny muted">1 待处理</span></button>
+              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-bell"/></svg>通知设置</span><span class="badge badge--ok">短信+邮件</span></button>
+              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-users"/></svg>跟单观察</span><span class="tiny muted">仅供观察 →</span></button>
+              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-brain"/></svg>AI 复盘</span><span class="tiny muted">仅提供分析 →</span></button>
+              <button class="row nav-row" style="border-bottom:0;"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-gear"/></svg>用户信息</span><span class="tiny sec__link">→</span></button>
             </div>
           </div>
         </div>
@@ -515,11 +597,11 @@
 
     <!-- 底部标签栏：5 个核心入口（跟单观察 / AI 复盘归入用户中心二级） -->
     <nav class="tabbar" id="tabbar">
-      <button class="tab is-active" data-target="autotrade"><span class="tab__icon">⚡</span>交易</button>
-      <button class="tab" data-target="momentum"><span class="tab__icon">📡</span>雷达</button>
-      <button class="tab" data-target="marketplace"><span class="tab__icon">🧩</span>策略</button>
-      <button class="tab" data-target="news"><span class="tab__icon">📰</span>新闻</button>
-      <button class="tab" data-target="user"><span class="tab__icon">👤</span>我的</button>
+      <button class="tab is-active" data-target="autotrade"><svg class="tab__icon"><use href="#i-bolt"/></svg>交易</button>
+      <button class="tab" data-target="momentum"><svg class="tab__icon"><use href="#i-radar"/></svg>雷达</button>
+      <button class="tab" data-target="marketplace"><svg class="tab__icon"><use href="#i-grid"/></svg>策略</button>
+      <button class="tab" data-target="news"><svg class="tab__icon"><use href="#i-news"/></svg>新闻</button>
+      <button class="tab" data-target="user"><svg class="tab__icon"><use href="#i-user"/></svg>我的</button>
     </nav>
   </div>
 
@@ -552,12 +634,13 @@
       var initial = (location.hash || '').replace('#', '');
       if (titles[initial]) activate(initial);
 
-      // 主题切换（原型内联，仅演示深浅切换意图）
+      // 主题切换（原型内联，仅演示深浅切换意图；此原型专注深色，浅色为占位）
       document.getElementById('themeBtn').addEventListener('click', function () {
         var html = document.documentElement;
         var next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
         html.setAttribute('data-theme', next);
-        this.textContent = next === 'dark' ? '☾' : '☀';
+        var use = this.querySelector('use');
+        if (use) use.setAttribute('href', next === 'dark' ? '#i-moon' : '#i-bolt');
       });
 
       // chips 单选高亮（筛选演示）
@@ -688,7 +771,7 @@
         var r = readyMap[c.readiness];
         return '<div class="card">'
           + '<div class="flex" style="justify-content:space-between;">'
-          + '<div class="flex"><span class="item__ico" style="width:34px;height:34px;font-size:14px;">' + (c.dir === 'up' ? '📈' : '📉') + '</span>'
+          + '<div class="flex"><span class="item__ico ' + (c.dir === 'up' ? 'ico-up' : 'ico-down') + '" style="width:34px;height:34px;font-size:15px;">' + (c.dir === 'up' ? '▲' : '▼') + '</span>'
           + '<div><div style="font-weight:700;">' + c.symbol + '</div><div class="tiny muted">' + c.ex + ' · ' + c.tone + '</div></div></div>'
           + '<span class="badge ' + r.c + '">' + r.t + '</span></div>'
           + '<div class="tiny" style="margin-top:9px;line-height:1.5;">' + c.hint + '</div>'
