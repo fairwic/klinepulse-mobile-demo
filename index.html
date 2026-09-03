@@ -130,19 +130,6 @@
     .screen.is-active { display: block; }
     @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-    .prototype-notice {
-      position: relative;
-      z-index: 1;
-      margin: 12px 14px 0;
-      padding: 10px 12px;
-      border: 1px solid rgba(232, 180, 92, 0.32);
-      border-radius: 12px;
-      background: rgba(232, 180, 92, 0.08);
-      color: var(--text-secondary);
-      font-size: 11px;
-      line-height: 1.55;
-    }
-
     /* ============ 底部标签栏 ============ */
     .tabbar {
       position: fixed;
@@ -156,7 +143,7 @@
       padding-bottom: var(--safe-bottom);
       display: grid;
       grid-template-columns: repeat(5, 1fr);
-      background: rgba(11, 17, 22, 0.96);
+      background: rgba(18, 18, 18, 0.97);
       backdrop-filter: blur(14px);
       border-top: 1px solid var(--border-subtle);
     }
@@ -334,6 +321,128 @@
     .spark { display: flex; align-items: flex-end; gap: 2px; height: 34px; }
     .spark span { flex: 1; background: linear-gradient(180deg, var(--status-success), rgba(99, 214, 154, 0.18)); border-radius: 2px 2px 0 0; }
 
+    /* 分段控件：发现屏 信号/情报/策略 切换 */
+    .seg {
+      display: grid; grid-auto-flow: column; grid-auto-columns: 1fr;
+      gap: 3px; padding: 3px; border-radius: 12px;
+      background: var(--bg-subtle); border: 1px solid var(--border-subtle);
+    }
+    .seg__btn {
+      border: 0; background: none; cursor: pointer; font: inherit;
+      min-height: 36px; border-radius: 9px; font-size: 13px; font-weight: 700;
+      color: var(--text-muted); transition: background 160ms ease, color 160ms ease;
+    }
+    .seg__btn.is-active { background: var(--accent-dim); color: var(--accent-strong); box-shadow: inset 0 0 0 1px rgba(232, 180, 92, 0.28); }
+    .seg-panel { display: none; }
+    .seg-panel.is-active { display: block; animation: fade 200ms ease; }
+
+    /* ============ Overlay 系统：全屏 push 详情页 + 底部 Sheet ============ */
+    /* 全屏 push 页：从右滑入，顶部返回栏，盖过 tabbar */
+    .push {
+      position: fixed; inset: 0; z-index: 60;
+      max-width: 430px; margin: 0 auto;
+      display: flex; flex-direction: column;
+      background: var(--bg-page);
+      transform: translateX(100%);
+      visibility: hidden;
+      transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1), visibility 260ms;
+    }
+    .push.is-open { transform: translateX(0); visibility: visible; }
+    .push__bar {
+      position: sticky; top: 0; z-index: 2;
+      display: flex; align-items: center; gap: 10px;
+      height: var(--topbar-h); padding: 0 12px;
+      background: rgba(6, 6, 6, 0.92); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .push__back {
+      width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto;
+      border: 0; background: none; color: var(--text-primary);
+      display: grid; place-items: center; cursor: pointer;
+    }
+    .push__title { font-size: 16px; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .push__body { flex: 1; overflow-y: auto; padding: 14px 14px 32px; }
+
+    /* 底部 Sheet：从底部升起，操作/确认类 */
+    .sheet-backdrop {
+      position: fixed; inset: 0; z-index: 70;
+      max-width: 430px; margin: 0 auto;
+      background: rgba(0, 0, 0, 0.6);
+      opacity: 0; visibility: hidden;
+      transition: opacity 220ms ease, visibility 220ms;
+    }
+    .sheet-backdrop.is-open { opacity: 1; visibility: visible; }
+    .sheet {
+      position: absolute; left: 0; right: 0; bottom: 0;
+      background: var(--bg-surface);
+      border-radius: 20px 20px 0 0;
+      border-top: 1px solid var(--border-strong);
+      padding: 8px 16px calc(20px + var(--safe-bottom));
+      transform: translateY(100%);
+      transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+      max-height: 88%; overflow-y: auto;
+    }
+    .sheet-backdrop.is-open .sheet { transform: translateY(0); }
+    .sheet__grip { width: 38px; height: 4px; border-radius: 999px; background: var(--border-strong); margin: 6px auto 12px; }
+    .sheet__title { font-size: 16px; font-weight: 800; }
+    .sheet__desc { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 8px; }
+    .sheet__actions { display: flex; flex-direction: column; gap: 9px; margin-top: 16px; }
+    @media (prefers-reduced-motion: reduce) {
+      .push, .sheet, .sheet-backdrop { transition: none; }
+    }
+
+    /* ============ 探索/行情屏 ============ */
+    /* 搜索框内的热搜词 */
+    .mkt-search__hot { color: var(--text-muted); white-space: nowrap; flex: 0 0 auto; }
+    .mkt-hot-flame { filter: grayscale(0.1); }
+    /* 一级分段：自选/现货/合约/总览（选中态为金色实心药丸，参考 OKX 但换暗金） */
+    .mkt-tabs { display: flex; gap: 6px; margin-top: 14px; overflow-x: auto; scrollbar-width: none; }
+    .mkt-tabs::-webkit-scrollbar { display: none; }
+    .mkt-tab {
+      flex: 0 0 auto; border: 0; background: none; cursor: pointer; font: inherit;
+      padding: 6px 14px; border-radius: 999px; font-size: 15px; font-weight: 700;
+      color: var(--text-muted); transition: background 160ms ease, color 160ms ease;
+    }
+    .mkt-tab.is-active { color: var(--accent-strong); background: var(--accent-dim); box-shadow: inset 0 0 0 1px rgba(232, 180, 92, 0.28); }
+    /* 列表头 */
+    .mkt-head {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+      margin-top: 14px; padding: 0 2px 8px;
+      font-size: 11.5px; color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .mkt-head span:nth-child(2) { min-width: 84px; }
+    .mkt-head span:nth-child(3) { min-width: 92px; }
+    /* 币种行 */
+    .mkt-row {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+      padding: 12px 2px; border-bottom: 1px solid var(--border-subtle); cursor: pointer;
+    }
+    .mkt-row:active { background: var(--bg-subtle); }
+    .mkt-row__name { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .mkt-coin {
+      width: 34px; height: 34px; border-radius: 50%; flex: 0 0 auto;
+      display: grid; place-items: center; font-size: 12px; font-weight: 800;
+      color: var(--bg-page); border: 1px solid var(--border-subtle);
+    }
+    .mkt-coin-meta { min-width: 0; }
+    .mkt-coin-sym { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
+    .mkt-coin-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mkt-tag-perp {
+      font-size: 9.5px; font-weight: 700; padding: 1px 5px; border-radius: 4px;
+      color: var(--accent-strong); background: var(--accent-dim); border: 1px solid rgba(232, 180, 92, 0.28);
+    }
+    .mkt-price { min-width: 84px; text-align: right; }
+    .mkt-price__last { font-size: 14px; font-weight: 700; }
+    .mkt-price__usd { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    /* 涨跌色块：绿涨红跌（全站语义一致） */
+    .mkt-chg {
+      min-width: 92px; text-align: center; padding: 8px 6px; border-radius: 9px;
+      font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
+    }
+    .mkt-chg--up { color: #06110b; background: var(--status-success); }
+    .mkt-chg--down { color: #150605; background: var(--status-danger); }
+
     .muted { color: var(--text-muted); }
     .tiny { font-size: 11px; }
     .stack { display: flex; flex-direction: column; gap: 10px; }
@@ -362,6 +471,10 @@
         <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4-4"/></symbol>
         <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></symbol>
         <symbol id="i-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/></symbol>
+        <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13a8 8 0 0 1 16 0"/><path d="M12 13l3.5-3"/><circle cx="12" cy="13" r="1.2" fill="currentColor" stroke="none"/><path d="M4 13v4M20 13v4"/></symbol>
+        <symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h12v3"/><path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1H5"/><circle cx="16.5" cy="12.5" r="1.3" fill="currentColor" stroke="none"/></symbol>
+        <symbol id="i-compass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></symbol>
+        <symbol id="i-candle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3v3M7 15v6"/><rect x="4.5" y="6" width="5" height="9" rx="1"/><path d="M17 3v5M17 17v4"/><rect x="14.5" y="8" width="5" height="9" rx="1"/></symbol>
       </defs>
     </svg>
 
@@ -378,154 +491,210 @@
       </div>
     </header>
 
-    <aside class="prototype-notice" role="note">
-      本页面为产品交互原型，账户、交易和收益数据均为演示样本，不构成投资建议，也不具备真实下单能力。
-    </aside>
-
     <!-- 各屏内容：骨架占位，探查结果回来后填充真实字段 -->
     <main id="screens">
       <!-- ========== 自动化交易屏（单一币种只读监控台） ========== -->
-      <section class="screen is-active" data-screen="autotrade">
-        <!-- 合规焦点条：仅查看 · 不会自动下单 -->
-        <div class="flex" style="justify-content:space-between;padding:2px 2px 10px;">
-          <span class="tiny muted">行情、订单、持仓和风险状态会在本页同步</span>
-          <span class="badge badge--muted badge--square">仅查看 · 不会自动下单</span>
-        </div>
-
-        <!-- 币种 + 永续行情条 -->
+      <!-- ========== 概览屏（首页驾驶舱：我的钱怎么样 + 有没有事要处理） ========== -->
+      <section class="screen is-active" data-screen="overview">
+        <!-- 资产 + 今日盈亏大数字（首屏焦点） -->
         <div class="card card--focus">
           <div class="flex" style="justify-content:space-between;">
-            <button class="flex" style="background:none;border:0;color:inherit;cursor:pointer;">
-              <span class="item__ico" style="width:32px;height:32px;"><svg class="svg-ic svg-ic--sm"><use href="#i-coin"/></svg></span>
-              <span style="font-weight:800;font-size:16px;">ASTER-USDT <span class="tiny muted">永续</span></span>
-              <svg class="svg-ic svg-ic--sm" style="transform:rotate(90deg);color:var(--text-muted);"><use href="#i-chevron"/></svg>
-            </button>
-            <span class="badge badge--info">OKX 行情源</span>
+            <span class="tiny muted">全部资产估值 · USDT</span>
+            <span class="tiny muted num">更新于 14:22</span>
           </div>
-          <div class="flex" style="justify-content:space-between;margin-top:12px;">
-            <div><div class="kpi__value num" style="font-size:22px;">1.8624</div><div class="tiny pnl-pos num">+6.42% 今日</div></div>
-            <div class="spark" style="width:120px;">
-              <span style="height:40%"></span><span style="height:55%"></span><span style="height:48%"></span>
-              <span style="height:70%"></span><span style="height:62%"></span><span style="height:85%"></span>
-              <span style="height:78%"></span><span style="height:100%"></span>
-            </div>
+          <div class="num" style="font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-top:6px;">12,847.30</div>
+          <div class="flex" style="gap:14px;margin-top:6px;">
+            <span class="num pnl-pos" style="font-size:14px;font-weight:700;">+318.60 今日</span>
+            <span class="num pnl-pos tiny" style="align-self:center;">▲ 2.54%</span>
+            <span class="num muted tiny" style="align-self:center;">累计 +18.7%</span>
           </div>
-          <div class="rows" style="margin-top:10px;">
-            <div class="row"><span class="row__k">24h 成交额</span><span class="row__v num">2.14 亿 USDT</span></div>
-            <div class="row"><span class="row__k">资金费率</span><span class="row__v num">+0.0125% · 08:00 结算</span></div>
+          <div class="kpi-grid" style="margin-top:14px;">
+            <div class="kpi"><div class="kpi__label">在跑组合</div><div class="kpi__value num">2</div></div>
+            <div class="kpi"><div class="kpi__label">持仓名义</div><div class="kpi__value num" style="font-size:14px;">3,120</div></div>
+            <div class="kpi"><div class="kpi__label">未实现盈亏</div><div class="kpi__value num pnl-pos" style="font-size:14px;">+96.4</div></div>
           </div>
-          <div class="tiny muted" style="margin-top:8px;">图表为窄屏精简走势，完整 K 线、盘口在桌面工作台查看。</div>
         </div>
 
-        <!-- 平台账户就绪卡（可展开明细） -->
+        <!-- 风险待办：有没有事要马上处理（最高优先，用户可操作） -->
         <div class="sec">
-          <div class="sec__head"><span class="sec__title">全部已启用平台账户</span><span class="sec__hint">各平台独立检查下单</span></div>
+          <div class="sec__head"><span class="sec__title">需要处理</span><span class="sec__link">刷新状态</span></div>
+          <div id="overviewTodos" class="stack"></div>
+        </div>
+
+        <!-- 组合状态速览 -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">我的组合</span><span class="sec__link">查看持仓 →</span></div>
+          <div id="overviewCombos" class="stack"></div>
+        </div>
+
+        <!-- 今日自动执行摘要（自动交易用户） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">今日自动执行</span><span class="badge badge--muted badge--square">未设止损不下单</span></div>
+          <div class="card">
+            <div class="kpi-grid">
+              <div class="kpi"><div class="kpi__label">触发信号</div><div class="kpi__value num">5</div></div>
+              <div class="kpi"><div class="kpi__label">已开仓</div><div class="kpi__value num" style="color:var(--status-success);">3</div></div>
+              <div class="kpi"><div class="kpi__label">被拦截</div><div class="kpi__value num" style="color:var(--status-warning);">2</div></div>
+            </div>
+            <div class="tiny muted" style="margin-top:10px;line-height:1.5;">2 笔因缺少止损被拦截，未产生真实下单。点开可查看每笔证据。</div>
+            <button class="btn btn--ghost btn--sm btn--block" style="margin-top:10px;">查看今日执行记录</button>
+          </div>
+        </div>
+
+        <!-- 今日重点信号（信号订阅用户） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">今日重点信号</span><span class="sec__link">去发现 →</span></div>
+          <div id="overviewSignals" class="stack"></div>
+        </div>
+      </section>
+
+      <!-- ========== 探索/行情屏（全市场币价行情，参考 OKX 行情页） ========== -->
+      <section class="screen" data-screen="markets">
+        <!-- 搜索框（点击打开搜索页，热搜词占位） -->
+        <div class="card flex mkt-search" data-push="search" style="padding:0 14px;gap:10px;cursor:pointer;">
+          <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-search"/></svg>
+          <input type="search" aria-label="搜索币种" readonly
+            style="flex:1;height:44px;padding:0;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;pointer-events:none;" />
+          <span class="mkt-search__hot tiny"><span class="mkt-hot-flame">🔥</span> SOL 热门交易</span>
+        </div>
+
+        <!-- 一级分段：自选 / 现货 / 合约 / 总览 -->
+        <div class="mkt-tabs" id="mktTabs">
+          <button class="mkt-tab" data-mkt="fav">自选</button>
+          <button class="mkt-tab" data-mkt="spot">现货</button>
+          <button class="mkt-tab is-active" data-mkt="perp">合约</button>
+          <button class="mkt-tab" data-mkt="all">总览</button>
+        </div>
+
+        <!-- 二级筛选 chips -->
+        <div class="chips" style="margin-top:12px;">
+          <button class="chip is-active">全部 ▾</button>
+          <button class="chip">新币榜</button>
+          <button class="chip">TradFi</button>
+          <button class="chip">USDT-M</button>
+          <button class="chip">USDⓈ-M</button>
+          <button class="chip">Crypto-M</button>
+        </div>
+
+        <!-- 列表头 -->
+        <div class="mkt-head">
+          <span>名称 ⇅ / 成交额 ⇅</span>
+          <span style="text-align:right;">最新价 ⇅</span>
+          <span style="text-align:right;">今日涨跌 ⇅</span>
+        </div>
+
+        <!-- 币种列表 -->
+        <div id="marketList"></div>
+      </section>
+
+      <!-- ========== 持仓屏（我的钱具体在哪、有没有裸单） ========== -->
+      <section class="screen" data-screen="positions">
+        <!-- 敞口汇总 -->
+        <div class="card card--focus">
+          <div class="flex" style="justify-content:space-between;">
+            <span class="tiny muted">当前总敞口 · 名义 USDT</span>
+            <span class="badge badge--muted badge--square">仅查看</span>
+          </div>
+          <div class="num" style="font-size:26px;font-weight:800;margin-top:5px;">3,120.00</div>
+          <div class="kpi-grid" style="margin-top:12px;">
+            <div class="kpi kpi--primary"><div class="kpi__label">未实现盈亏</div><div class="kpi__value num" style="font-size:15px;">+96.40</div></div>
+            <div class="kpi"><div class="kpi__label">持仓数</div><div class="kpi__value num" style="font-size:15px;">2</div></div>
+            <div class="kpi"><div class="kpi__label">已挂止损</div><div class="kpi__value num" style="font-size:15px;color:var(--status-success);">2 / 2</div></div>
+          </div>
+        </div>
+
+        <!-- 分平台切换 -->
+        <div class="chips" style="margin-top:12px;">
+          <button class="chip is-active">全部平台</button>
+          <button class="chip">OKX</button>
+          <button class="chip">币安</button>
+        </div>
+
+        <!-- 真实仓位（每个仓位含止损保护状态） -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">当前持仓</span><span class="sec__hint">按组合归属</span></div>
+          <div id="positionList" class="stack"></div>
+        </div>
+
+        <!-- 平台账户就绪 -->
+        <div class="sec">
+          <div class="sec__head"><span class="sec__title">平台账户</span><span class="sec__hint">各平台独立检查下单</span></div>
           <div id="platformAccounts" class="stack"></div>
         </div>
-
-        <!-- 待处理问题（阻塞态字典） -->
-        <div class="sec">
-          <div class="sec__head"><span class="sec__title">待处理问题</span><span class="sec__link">刷新自动交易记录</span></div>
-          <div id="autotradeIssues" class="stack"></div>
-        </div>
       </section>
-      <!-- ========== 动量雷达屏（观察，不代表买入建议） ========== -->
-      <section class="screen" data-screen="momentum">
-        <div class="flex" style="justify-content:space-between;padding:2px 2px 10px;">
-          <span class="tiny muted">候选币种按成交活跃度、波动和可交易状态排序</span>
-          <span class="badge badge--muted badge--square">信号待确认</span>
+
+      <!-- ========== 发现屏（信号 / 情报 / 策略 三合一） ========== -->
+      <section class="screen" data-screen="discover">
+        <!-- 分段切换 -->
+        <div class="seg" id="discoverSeg">
+          <button class="seg__btn is-active" data-seg="signals">信号</button>
+          <button class="seg__btn" data-seg="intel">情报</button>
+          <button class="seg__btn" data-seg="strategies">策略</button>
         </div>
 
-        <!-- 统计条 -->
-        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
-          <div class="kpi"><div class="kpi__label">异动事件</div><div class="kpi__value num">18</div></div>
-          <div class="kpi"><div class="kpi__label">进 Top50</div><div class="kpi__value num" style="color:var(--status-success);">5</div></div>
-          <div class="kpi"><div class="kpi__label">最大跃迁</div><div class="kpi__value num">+37</div></div>
-          <div class="kpi"><div class="kpi__label">交易链路</div><div class="kpi__value num" style="font-size:14px;">3·2·1</div><div class="kpi__sub">信号·任务·结果</div></div>
-        </div>
-
-        <div class="chips" style="margin-top:12px;">
-          <button class="chip is-active">全部异动</button>
-          <button class="chip">排名跃迁</button>
-          <button class="chip">Top50 进入</button>
-          <button class="chip">Top50 退出</button>
-        </div>
-
-        <!-- 待验证信号 -->
-        <div class="sec">
-          <div class="sec__head"><span class="sec__title">待验证信号</span><span class="sec__hint">只作观察，不代表买入建议</span></div>
-          <div id="radarCandidates" class="stack"></div>
-        </div>
-
-        <!-- 排名异动榜 -->
-        <div class="sec">
-          <div class="sec__head"><span class="sec__title">排名异动榜</span><span class="sec__link">刷新</span></div>
-          <div id="radarList" class="card"><div class="rows" id="radarRows"></div></div>
-        </div>
-      </section>
-      <!-- ========== 策略商城屏（策略×币种组合货架） ========== -->
-      <section class="screen" data-screen="marketplace">
-        <div class="flex" style="justify-content:space-between;padding:2px 2px 10px;">
-          <span class="tiny muted">订阅容量按“策略 × 币种”计算</span>
-          <span class="badge badge--info badge--square">会员优先</span>
-        </div>
-
-        <!-- 搜索 -->
-        <div class="card flex" style="padding:0 14px;gap:10px;">
-          <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-search"/></svg>
-          <input type="search" placeholder="搜索策略名称、交易对、周期、风险或关键词"
-            style="flex:1;height:46px;padding:0;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;" />
-        </div>
-
-        <div class="chips" style="margin-top:12px;">
-          <button class="chip is-active">全部</button>
-          <button class="chip">动量突破</button>
-          <button class="chip">趋势跟随</button>
-          <button class="chip">低风险</button>
-          <button class="chip">全市场</button>
-        </div>
-
-        <div class="sec">
-          <div class="sec__head"><span class="sec__title">可订阅策略</span><span class="sec__hint">点开查看回测口径与证据</span></div>
-          <div id="strategyList" class="stack"></div>
-        </div>
-      </section>
-      <!-- ========== 新闻雷达屏 ========== -->
-      <section class="screen" data-screen="news">
-        <div class="card card--focus" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
-          <div class="tiny" style="color:var(--accent-strong);font-weight:700;letter-spacing:1px;">KLINEPULSE 事件雷达</div>
-          <div style="font-size:19px;font-weight:800;margin-top:5px;">市场事件雷达</div>
-          <div class="tiny muted" style="margin-top:6px;line-height:1.6;">汇总交易所公告、监管、安全和市场变化，说明可能影响、风险和下一步建议。</div>
-          <div class="tiny muted" style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
-            <span>发现事件</span><span style="color:var(--accent);">→</span><span>判断影响</span>
-            <span style="color:var(--accent);">→</span><span>查看风险</span><span style="color:var(--accent);">→</span><span>给出下一步</span>
+        <!-- 信号分段（雷达候选，默认） -->
+        <div class="seg-panel is-active" data-panel="signals">
+          <div class="flex" style="justify-content:space-between;padding:12px 2px 4px;">
+            <span class="tiny muted">候选按成交活跃度、波动排序</span>
+            <span class="badge badge--muted badge--square">信号待确认</span>
+          </div>
+          <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+            <div class="kpi"><div class="kpi__label">异动</div><div class="kpi__value num">18</div></div>
+            <div class="kpi"><div class="kpi__label">进 Top50</div><div class="kpi__value num" style="color:var(--status-success);">5</div></div>
+            <div class="kpi"><div class="kpi__label">最大跃迁</div><div class="kpi__value num">+37</div></div>
+            <div class="kpi"><div class="kpi__label">链路</div><div class="kpi__value num" style="font-size:13px;">3·2·1</div></div>
+          </div>
+          <div class="sec">
+            <div class="sec__head"><span class="sec__title">待验证信号</span><span class="sec__hint">只作观察</span></div>
+            <div id="radarCandidates" class="stack"></div>
+          </div>
+          <div class="sec">
+            <div class="sec__head"><span class="sec__title">排名异动榜</span><span class="sec__link">刷新</span></div>
+            <div class="card"><div class="rows" id="radarRows"></div></div>
           </div>
         </div>
 
-        <!-- 态势统计条：最新/高影响/需检查/平均可信度 -->
-        <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-top:10px;">
-          <div class="kpi"><div class="kpi__label">最新信息</div><div class="kpi__value num">42</div></div>
-          <div class="kpi"><div class="kpi__label">高影响</div><div class="kpi__value num" style="color:var(--status-warning);">7</div></div>
-          <div class="kpi"><div class="kpi__label">需检查</div><div class="kpi__value num" style="color:var(--accent-strong);">12</div></div>
-          <div class="kpi"><div class="kpi__label">平均可信度</div><div class="kpi__value num">78%</div></div>
+        <!-- 情报分段（新闻） -->
+        <div class="seg-panel" data-panel="intel">
+          <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-top:12px;">
+            <div class="kpi"><div class="kpi__label">最新</div><div class="kpi__value num">42</div></div>
+            <div class="kpi"><div class="kpi__label">高影响</div><div class="kpi__value num" style="color:var(--status-warning);">7</div></div>
+            <div class="kpi"><div class="kpi__label">需检查</div><div class="kpi__value num" style="color:var(--accent-strong);">12</div></div>
+            <div class="kpi"><div class="kpi__label">可信度</div><div class="kpi__value num">78%</div></div>
+          </div>
+          <div class="chips" style="margin-top:12px;">
+            <button class="chip is-active">全部</button>
+            <button class="chip">交易所公告</button>
+            <button class="chip">监管·宏观</button>
+            <button class="chip">安全事件</button>
+          </div>
+          <div class="sec">
+            <div class="sec__head"><span class="sec__title">今日重点</span><span class="sec__hint">按情报热度</span></div>
+            <div id="newsList" class="stack"></div>
+          </div>
         </div>
 
-        <!-- 分类筛选 -->
-        <div class="chips" style="margin-top:12px;">
-          <button class="chip is-active">全部</button>
-          <button class="chip">交易所公告</button>
-          <button class="chip">监管·宏观</button>
-          <button class="chip">安全事件</button>
-          <button class="chip">ETF·机构</button>
-          <button class="chip">市场快讯</button>
-        </div>
-
-        <div class="sec">
-          <div class="sec__head"><span class="sec__title">今日重点</span><span class="sec__hint">按情报热度排序</span></div>
-          <div id="newsList" class="stack"></div>
+        <!-- 策略分段（策略商城） -->
+        <div class="seg-panel" data-panel="strategies">
+          <div class="card flex" style="padding:0 14px;gap:10px;margin-top:12px;">
+            <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-search"/></svg>
+            <input type="search" placeholder="搜索策略名称、交易对、周期、风险"
+              style="flex:1;height:46px;padding:0;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;" />
+          </div>
+          <div class="chips" style="margin-top:12px;">
+            <button class="chip is-active">全部</button>
+            <button class="chip">动量突破</button>
+            <button class="chip">趋势跟随</button>
+            <button class="chip">全市场</button>
+          </div>
+          <div class="sec">
+            <div class="sec__head"><span class="sec__title">可订阅策略</span><span class="sec__hint">订阅按“策略 × 币种”计算</span></div>
+            <div id="strategyList" class="stack"></div>
+          </div>
         </div>
       </section>
-      <!-- ========== 用户中心屏（落地准备度仪表盘） ========== -->
+      <!-- ========== 旧新闻雷达屏（已并入发现） ========== -->
+      <!-- ========== 用户中心屏（我的：会员/准备度/组合订阅/二级入口） ========== -->
       <section class="screen" data-screen="user">
         <!-- 账户 Hero：会员等级 + 组合权限概览 -->
         <div class="card card--focus" style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
@@ -562,7 +731,7 @@
         <!-- 4 张统计卡 -->
         <div class="sec">
           <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
-            <div class="kpi"><div class="kpi__label">组合容量</div><div class="kpi__value num" style="font-size:15px;">3 / 10</div><div class="kpi__sub">还可扩展 7 个组合</div></div>
+            <div class="kpi"><div class="kpi__label">会员到期</div><div class="kpi__value num" style="font-size:15px;">32 天</div><div class="kpi__sub">Pro · 到期后转信号</div></div>
             <div class="kpi"><div class="kpi__label">通知状态</div><div class="kpi__value" style="font-size:15px;">短信 + 邮件</div><div class="kpi__sub">已配置</div></div>
             <div class="kpi"><div class="kpi__label">交易平台连接</div><div class="kpi__value num" style="font-size:15px;color:var(--status-warning);">1 / 3</div><div class="kpi__sub">1 个待检查</div></div>
             <div class="kpi"><div class="kpi__label">本周动作</div><div class="kpi__value num" style="font-size:15px;">3</div><div class="kpi__sub">1 待续订 · 2 待连接</div></div>
@@ -580,8 +749,8 @@
           <div class="sec__head"><span class="sec__title">账户与设置</span></div>
           <div class="card" style="padding:4px 14px;">
             <div class="rows">
-              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-card"/></svg>会员权益</span><span class="tiny sec__link">Pro · 管理 →</span></button>
-              <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-link"/></svg>交易平台连接</span><span class="badge badge--warn">1 / 3</span></button>
+              <button class="row nav-row" data-push="membership-plans"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-card"/></svg>会员权益</span><span class="tiny sec__link">Pro · 管理 →</span></button>
+              <button class="row nav-row" data-push="api-connect"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-link"/></svg>交易平台连接</span><span class="badge badge--warn">1 / 3</span></button>
               <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-receipt"/></svg>我的订单</span><span class="tiny muted">1 待处理</span></button>
               <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-bell"/></svg>通知设置</span><span class="badge badge--ok">短信+邮件</span></button>
               <button class="row nav-row"><span class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic"><use href="#i-users"/></svg>跟单观察</span><span class="tiny muted">仅供观察 →</span></button>
@@ -597,20 +766,25 @@
 
     <!-- 底部标签栏：5 个核心入口（跟单观察 / AI 复盘归入用户中心二级） -->
     <nav class="tabbar" id="tabbar">
-      <button class="tab is-active" data-target="autotrade"><svg class="tab__icon"><use href="#i-bolt"/></svg>交易</button>
-      <button class="tab" data-target="momentum"><svg class="tab__icon"><use href="#i-radar"/></svg>雷达</button>
-      <button class="tab" data-target="marketplace"><svg class="tab__icon"><use href="#i-grid"/></svg>策略</button>
-      <button class="tab" data-target="news"><svg class="tab__icon"><use href="#i-news"/></svg>新闻</button>
+      <button class="tab is-active" data-target="overview"><svg class="tab__icon"><use href="#i-dashboard"/></svg>概览</button>
+      <button class="tab" data-target="markets"><svg class="tab__icon"><use href="#i-candle"/></svg>探索</button>
+      <button class="tab" data-target="positions"><svg class="tab__icon"><use href="#i-wallet"/></svg>持仓</button>
+      <button class="tab" data-target="discover"><svg class="tab__icon"><use href="#i-compass"/></svg>发现</button>
       <button class="tab" data-target="user"><svg class="tab__icon"><use href="#i-user"/></svg>我的</button>
     </nav>
+
+    <!-- ===== 二级页面：全屏 push 详情页（右滑入，data-push 触发） ===== -->
+    <div id="overlayHost"></div>
+
+    <!-- ===== 底部 Sheet：操作/确认类（data-sheet 触发） ===== -->
+    <div id="sheetHost"></div>
   </div>
 
   <script>
     // ============ 多屏切换：底部标签栏驱动，同步顶栏标题 ============
     (function () {
       var titles = {
-        autotrade: '自动化交易', momentum: '动量雷达', marketplace: '策略商城',
-        news: '新闻雷达', user: '用户中心'
+        overview: '概览', markets: '行情', positions: '持仓', discover: '发现', user: '我的'
       };
       var tabbar = document.getElementById('tabbar');
       var screens = document.querySelectorAll('.screen');
@@ -630,7 +804,7 @@
         if (btn) { activate(btn.dataset.target); history.replaceState(null, '', '#' + btn.dataset.target); }
       });
 
-      // URL hash 深链接：支持 #autotrade/#momentum/#marketplace/#news/#user 直接进入对应屏
+      // URL hash 深链接：支持 #overview/#markets/#positions/#discover/#user 直接进入对应屏
       var initial = (location.hash || '').replace('#', '');
       if (titles[initial]) activate(initial);
 
@@ -651,6 +825,522 @@
           group.querySelectorAll('.chip').forEach(function (x) { x.classList.remove('is-active'); });
           c.classList.add('is-active');
         });
+      });
+
+      // 发现屏分段切换：信号 / 情报 / 策略
+      var seg = document.getElementById('discoverSeg');
+      if (seg) {
+        var panels = document.querySelectorAll('.seg-panel');
+        seg.addEventListener('click', function (e) {
+          var b = e.target.closest('.seg__btn');
+          if (!b) return;
+          seg.querySelectorAll('.seg__btn').forEach(function (x) { x.classList.remove('is-active'); });
+          b.classList.add('is-active');
+          panels.forEach(function (p) { p.classList.toggle('is-active', p.dataset.panel === b.dataset.seg); });
+        });
+      }
+    })();
+
+    // ============ Overlay 控制器：全屏 push 详情页 + 底部 Sheet（注册表 + 事件委托） ============
+    // 后续每组二级页面只需 PUSH.register(id, builder) / SHEET.register(id, builder)，
+    // 控制器统一负责按 data-push / data-sheet 打开、返回/遮罩/Esc 关闭。
+    var PUSH = (function () { return { _m: {}, register: function (id, fn) { this._m[id] = fn; }, get: function (id) { return this._m[id]; } }; })();
+    var SHEET = (function () { return { _m: {}, register: function (id, fn) { this._m[id] = fn; }, get: function (id) { return this._m[id]; } }; })();
+    (function () {
+      var overlayHost = document.getElementById('overlayHost');
+      var sheetHost = document.getElementById('sheetHost');
+      var pushStack = []; // 支持详情页里再打开详情页
+
+      function backSvg() {
+        return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>';
+      }
+      function openPush(id, ctx) {
+        var fn = PUSH.get(id);
+        if (!fn) { console.warn('未注册的 push 页:', id); return; }
+        var data = fn(ctx || {});
+        var el = document.createElement('section');
+        el.className = 'push';
+        el.setAttribute('data-push-page', id);
+        el.innerHTML = '<div class="push__bar">'
+          + '<button class="push__back" aria-label="返回">' + backSvg() + '</button>'
+          + '<div class="push__title">' + (data.title || '') + '</div>'
+          + (data.barRight || '')
+          + '</div>'
+          + '<div class="push__body">' + data.body + '</div>';
+        overlayHost.appendChild(el);
+        el.querySelector('.push__back').addEventListener('click', closeTopPush);
+        requestAnimationFrame(function () { el.classList.add('is-open'); });
+        pushStack.push(el);
+        if (typeof data.onMount === 'function') data.onMount(el);
+      }
+      function closeTopPush() {
+        var el = pushStack.pop();
+        if (!el) return;
+        el.classList.remove('is-open');
+        setTimeout(function () { el.remove(); }, 280);
+      }
+      function openSheet(id, ctx) {
+        var fn = SHEET.get(id);
+        if (!fn) { console.warn('未注册的 sheet:', id); return; }
+        var data = fn(ctx || {});
+        var bd = document.createElement('div');
+        bd.className = 'sheet-backdrop';
+        bd.innerHTML = '<div class="sheet" role="dialog" aria-modal="true">'
+          + '<div class="sheet__grip"></div>' + data.body + '</div>';
+        sheetHost.appendChild(bd);
+        function close() { bd.classList.remove('is-open'); setTimeout(function () { bd.remove(); }, 300); }
+        bd.addEventListener('click', function (e) { if (e.target === bd || e.target.closest('[data-sheet-close]')) close(); });
+        requestAnimationFrame(function () { bd.classList.add('is-open'); });
+        if (typeof data.onMount === 'function') data.onMount(bd, close);
+      }
+
+      // 事件委托：任意元素带 data-push / data-sheet 即可触发；data-ctx 传 JSON 上下文
+      document.addEventListener('click', function (e) {
+        var back = e.target.closest('[data-push-back]');
+        if (back) { e.preventDefault(); closeTopPush(); return; }
+        var p = e.target.closest('[data-push]');
+        if (p) { e.preventDefault(); openPush(p.getAttribute('data-push'), parseCtx(p)); return; }
+        var s = e.target.closest('[data-sheet]');
+        if (s) { e.preventDefault(); openSheet(s.getAttribute('data-sheet'), parseCtx(s)); return; }
+      });
+      function parseCtx(el) {
+        var raw = el.getAttribute('data-ctx');
+        if (!raw) return {};
+        try { return JSON.parse(raw); } catch (err) { return {}; }
+      }
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeTopPush(); });
+      // 暴露给后续脚本手动触发（如需）
+      window.__openPush = openPush; window.__openSheet = openSheet;
+
+      // 深链接：?push=<id> 或 ?sheet=<id> 直接打开对应二级页（可分享/收藏，也用于验证）
+      // 延迟到各组注册完成后再打开
+      setTimeout(function () {
+        var q = new URLSearchParams(location.search);
+        var pid = q.get('push'); var sid = q.get('sheet');
+        var pctx = {}; try { pctx = JSON.parse(q.get('ctx') || '{}'); } catch (e) {}
+        if (pid) openPush(pid, pctx);
+        if (sid) openSheet(sid, pctx);
+      }, 0);
+    })();
+
+    // ============ 二级页面内容：组合管理组（详情页 + 续订/风控/管理/取消/启用自动交易 Sheet） ============
+    (function () {
+      // 准备度检查项：绿勾=已就绪，红叹号=阻塞（operator 口径，缺一不可下单）
+      function readyRow(ok, label, note) {
+        var mark = ok ? '<span class="badge badge--ok">已就绪</span>' : '<span class="badge badge--danger">阻塞</span>';
+        return '<div class="flex" style="justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--border-subtle);">'
+          + '<div style="min-width:0;"><div style="font-size:13.5px;font-weight:600;">' + label + '</div>'
+          + (note ? '<div class="tiny" style="color:var(--text-muted);margin-top:2px;line-height:1.5;">' + note + '</div>' : '')
+          + '</div>' + mark + '</div>';
+      }
+      // 自动交易记录时间线一行
+      function tlRow(time, kind, text, tone) {
+        var dot = { ok: 'var(--status-success)', warn: 'var(--status-warning)', danger: 'var(--status-danger)', info: 'var(--text-muted)' }[tone] || 'var(--text-muted)';
+        return '<div class="flex" style="gap:11px;align-items:flex-start;padding:10px 0;">'
+          + '<div style="flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:' + dot + ';margin-top:5px;"></div>'
+          + '<div style="min-width:0;flex:1;"><div class="flex" style="justify-content:space-between;gap:8px;">'
+          + '<span style="font-size:13px;font-weight:600;">' + kind + '</span>'
+          + '<span class="tiny num" style="color:var(--text-muted);">' + time + '</span></div>'
+          + '<div class="tiny" style="color:var(--text-secondary);margin-top:3px;line-height:1.5;">' + text + '</div></div></div>';
+      }
+
+      PUSH.register('combo-detail', function (ctx) {
+        var name = ctx.name || 'ASTER-USDT · Market Velocity';
+        var running = ctx.running !== false;
+        return {
+          title: name,
+          barRight: '<button class="push__back" data-sheet="combo-manage" data-ctx=\'{"name":"' + name + '"}\' aria-label="管理"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg></button>',
+          body:
+            '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;">'
+            + '<div><div class="tiny" style="color:var(--text-muted);">运行状态</div>'
+            + '<div style="font-size:17px;font-weight:800;margin-top:3px;">' + (running ? '自动交易运行中' : '仅信号推送') + '</div></div>'
+            + '<span class="badge ' + (running ? 'badge--ok' : 'badge--muted') + '">' + (running ? '运行中' : '未启用') + '</span></div>'
+            + '<div class="flex" style="gap:16px;margin-top:14px;">'
+            + '<div><div class="tiny" style="color:var(--text-muted);">近30天收益</div><div class="num" style="font-size:15px;font-weight:700;color:var(--status-success);margin-top:2px;">+8.24%</div></div>'
+            + '<div><div class="tiny" style="color:var(--text-muted);">执行平台</div><div style="font-size:15px;font-weight:700;margin-top:2px;">OKX</div></div>'
+            + '<div><div class="tiny" style="color:var(--text-muted);">今日信号</div><div class="num" style="font-size:15px;font-weight:700;margin-top:2px;">3</div></div>'
+            + '</div></div>'
+
+            + '<div class="sec"><span>下单准备度</span><span class="sec__link">6/7 就绪</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + readyRow(true, '交易所凭证已验证', 'OKX API Key 只读+交易权限校验通过')
+            + readyRow(true, '账户余额充足', '可用 USDT 满足最小下单数量')
+            + readyRow(true, '交易对受支持', 'ASTER-USDT 永续在白名单内')
+            + readyRow(true, '数量/价格精度合法', '已按交易所 filters 取整')
+            + readyRow(true, 'worker 执行锁可用', '无并发占用，可独占执行')
+            + readyRow(false, '保护单计划缺失', '未配置止损，系统不会下单——请在风控设置补全')
+            + readyRow(true, '风控参数已确认', '单笔风险 1.5%，最大持仓 20%')
+            + '</div>'
+
+            + '<div class="sec"><span>自动交易记录</span><span class="tiny" style="color:var(--text-muted);">今日</span></div>'
+            + '<div class="card">'
+            + tlRow('14:32', '信号触发', '速度雷达命中，方向偏多，等待入场确认', 'info')
+            + tlRow('14:33', '被拦截 · 未下单', '这次信号缺少止损设置，系统按“无止损不下单”拦截', 'danger')
+            + tlRow('11:08', '已开仓', '多单 12 张 @ 1.842，已同步挂止损 1.795', 'ok')
+            + tlRow('09:15', '已止盈平仓', '+2.1R 触发移动止盈，实现收益 +3.6%', 'ok')
+            + '</div>'
+
+            + '<div class="stack" style="margin-top:16px;">'
+            + '<button class="btn btn--secondary btn--block" data-sheet="combo-risk" data-ctx=\'{"name":"' + name + '"}\'>风控设置</button>'
+            + (running
+              ? '<button class="btn btn--ghost btn--block" data-sheet="combo-renew" data-ctx=\'{"name":"' + name + '"}\'>续订 / 到期设置</button>'
+              : '<button class="btn btn--primary btn--block" data-sheet="combo-enable-auto" data-ctx=\'{"name":"' + name + '"}\'>启用自动交易</button>')
+            + '</div>'
+        };
+      });
+
+      SHEET.register('combo-renew', function (ctx) {
+        return { body:
+          '<div class="sheet__title">续订 / 到期设置</div>'
+          + '<div class="sheet__desc">当前订阅 <b>' + (ctx.name || '该组合') + '</b> 将于 <b class="num">2026-09-28</b> 到期。到期后自动降级为仅信号推送，不会自动平掉已有持仓。</div>'
+          + '<div class="stack" style="margin-top:14px;">'
+          + '<label class="card card--tap flex" style="justify-content:space-between;"><span>按月续订 · <b class="num">$29</b>/月</span><input type="radio" name="renew" checked></label>'
+          + '<label class="card card--tap flex" style="justify-content:space-between;"><span>按年续订 · <b class="num">$290</b>/年 <span class="tiny" style="color:var(--accent-strong);">省 2 个月</span></span><input type="radio" name="renew"></label>'
+          + '<label class="card card--tap flex" style="justify-content:space-between;"><span>到期自动续订</span><input type="checkbox" checked></label>'
+          + '</div>'
+          + '<div class="sheet__actions">'
+          + '<button class="btn btn--primary btn--block" data-sheet-close>确认续订</button>'
+          + '<button class="btn btn--ghost btn--block" data-sheet-close>暂不续订</button></div>'
+        };
+      });
+
+      SHEET.register('combo-risk', function (ctx) {
+        return { body:
+          '<div class="sheet__title">风控设置</div>'
+          + '<div class="sheet__desc">风控参数直接决定是否允许自动下单。未配置止损时，系统按“无止损不下单”拦截，不会提交任何真实订单。</div>'
+          + '<div class="stack" style="margin-top:14px;">'
+          + '<div class="card"><div class="flex" style="justify-content:space-between;"><span style="font-size:13.5px;">止损（必填）</span><span class="num" style="color:var(--status-danger);font-weight:700;">-3.0%</span></div>'
+          + '<div class="tiny" style="color:var(--text-muted);margin-top:6px;">跌破入场价 3% 触发止损平仓</div></div>'
+          + '<div class="card"><div class="flex" style="justify-content:space-between;"><span style="font-size:13.5px;">止盈</span><span class="num" style="color:var(--status-success);font-weight:700;">+6.0%</span></div></div>'
+          + '<div class="card"><div class="flex" style="justify-content:space-between;"><span style="font-size:13.5px;">单笔风险</span><span class="num" style="font-weight:700;">1.5%</span></div></div>'
+          + '<div class="card"><div class="flex" style="justify-content:space-between;"><span style="font-size:13.5px;">最大持仓占比</span><span class="num" style="font-weight:700;">20%</span></div></div>'
+          + '</div>'
+          + '<div class="sheet__actions">'
+          + '<button class="btn btn--primary btn--block" data-sheet-close>保存风控设置</button></div>'
+        };
+      });
+
+      SHEET.register('combo-manage', function (ctx) {
+        var name = ctx.name || '该组合';
+        return { body:
+          '<div class="sheet__title">组合管理</div>'
+          + '<div class="sheet__desc">' + name + '</div>'
+          + '<div class="sheet__actions">'
+          + '<button class="btn btn--secondary btn--block" data-sheet="combo-risk" data-ctx=\'{"name":"' + name + '"}\'>风控设置</button>'
+          + '<button class="btn btn--ghost btn--block" data-sheet-close>暂停自动交易（保留持仓）</button>'
+          + '<button class="btn btn--danger btn--block" data-sheet="combo-cancel" data-ctx=\'{"name":"' + name + '"}\'>取消该组合订阅</button>'
+          + '<button class="btn btn--ghost btn--block" data-sheet-close>关闭</button>'
+          + '</div>'
+        };
+      });
+
+      SHEET.register('combo-cancel', function (ctx) {
+        return { body:
+          '<div class="sheet__title" style="color:var(--status-danger);">取消组合订阅？</div>'
+          + '<div class="sheet__desc">取消后将立即停止 <b>' + (ctx.name || '该组合') + '</b> 的自动交易，不再接收该组合信号。<b style="color:var(--status-warning);">已持有的仓位不会被自动平掉</b>，需你在持仓页手动处理或依赖已挂的止损单。此操作本周期内不可恢复。</div>'
+          + '<div class="sheet__actions">'
+          + '<button class="btn btn--danger btn--block" data-sheet-close>确认取消订阅</button>'
+          + '<button class="btn btn--ghost btn--block" data-sheet-close>再想想</button></div>'
+        };
+      });
+
+      SHEET.register('combo-enable-auto', function (ctx) {
+        return { body:
+          '<div class="sheet__title">启用自动交易</div>'
+          + '<div class="sheet__desc">启用后，该组合的信号将通过你连接的交易所 API 自动下单。请确认已知悉以下风险前提：</div>'
+          + '<div class="card" style="margin-top:12px;">'
+          + '<div class="flex" style="gap:9px;padding:8px 0;"><span class="badge badge--warn">前提</span><span class="tiny" style="color:var(--text-secondary);line-height:1.6;">真实资金下单，盈亏由市场决定，历史收益不代表未来</span></div>'
+          + '<div class="flex" style="gap:9px;padding:8px 0;"><span class="badge badge--ok">保护</span><span class="tiny" style="color:var(--text-secondary);line-height:1.6;">未配置止损的信号一律不下单，避免裸单敞口</span></div>'
+          + '<div class="flex" style="gap:9px;padding:8px 0;"><span class="badge badge--info">隔离</span><span class="tiny" style="color:var(--text-secondary);line-height:1.6;">每个组合独立执行锁，多平台互不影响</span></div>'
+          + '</div>'
+          + '<label class="flex" style="gap:9px;margin-top:14px;font-size:12.5px;color:var(--text-secondary);"><input type="checkbox" id="enableAck"> 我已知悉自动交易使用真实资金，并接受上述风险</label>'
+          + '<div class="sheet__actions">'
+          + '<button class="btn btn--primary btn--block" data-sheet-close>确认启用自动交易</button>'
+          + '<button class="btn btn--ghost btn--block" data-sheet-close>取消</button></div>'
+        };
+      });
+    })();
+
+    // ============ 二级页面内容：策略→会员→API 链路（策略详情 + 会员方案 + 连接交易所） ============
+    (function () {
+      PUSH.register('strategy-detail', function (ctx) {
+        var name = ctx.name || 'Market Velocity · 15m';
+        return {
+          title: '策略详情',
+          body:
+            '<div class="card" style="margin-bottom:12px;">'
+            + '<div style="font-size:18px;font-weight:800;margin-bottom:8px;">' + name + '</div>'
+            + '<div class="flex chips" style="gap:8px;margin-bottom:12px;">'
+            + '<span class="chip">动量</span><span class="chip">风险 中</span><span class="chip">15m</span></div>'
+            + '<div class="flex" style="gap:20px;">'
+            + '<div><div class="tiny" style="color:var(--text-muted);">回测收益</div><div class="num" style="font-size:16px;font-weight:700;color:var(--status-success);margin-top:3px;">+127%</div></div>'
+            + '<div><div class="tiny" style="color:var(--text-muted);">夏普</div><div class="num" style="font-size:16px;font-weight:700;margin-top:3px;">2.8</div></div>'
+            + '<div><div class="tiny" style="color:var(--text-muted);">样本</div><div class="num" style="font-size:16px;font-weight:700;margin-top:3px;">148</div></div>'
+            + '<div><div class="tiny" style="color:var(--text-muted);">胜率</div><div class="num" style="font-size:16px;font-weight:700;margin-top:3px;">58%</div></div>'
+            + '</div></div>'
+
+            + '<div class="sec"><span>证据口径</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.6;margin-bottom:8px;">'
+            + '历史区间 <b class="num">2023-06 → 2024-12</b>，K线样本 <b class="num">8,420</b> 根，开仓次数 <b>148</b>。'
+            + '指标来源：<b>精选表现</b>（策略运营方人工复核后的代表性数据）。'
+            + '</div>'
+            + '<div class="tiny" style="color:var(--text-muted);line-height:1.6;">'
+            + '历史表现不代表未来；回测未计滑点与资金费。真实下单前，系统会再次刷新交易对、余额、精度、止损与风控门禁。'
+            + '</div></div>'
+
+            + '<div class="sec"><span>适用币种与周期</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-subtle);">'
+            + '<span style="font-size:13.5px;">适用范围</span><span style="font-weight:700;">全市场动量扫描</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-subtle);">'
+            + '<span style="font-size:13.5px;">推荐周期</span><span class="num" style="font-weight:700;">15m</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:8px 0;">'
+            + '<span style="font-size:13.5px;">支持交易所</span><span style="font-weight:700;">OKX / Binance</span></div>'
+            + '</div>'
+
+            + '<div class="sec"><span>订阅容量</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.6;">'
+            + '订阅容量按 <b>"策略 × 币种"</b> 计算。Plus 会员最多 <b class="num">3</b> 个组合且仅信号；'
+            + 'Pro 最多 <b class="num">10</b> 个且可连接交易所 API；Max 支持全部可用组合。'
+            + '</div></div>'
+
+            + '<button class="btn btn--primary btn--block" data-push="membership-plans" style="margin-top:16px;">查看会员方案并订阅</button>'
+            + '<button class="btn btn--ghost btn--block" style="margin-top:10px;" data-push-back>返回</button>'
+        };
+      });
+
+      PUSH.register('membership-plans', function () {
+        return {
+          title: '会员方案',
+          body:
+            '<div class="card" style="margin-bottom:12px;border:2px solid var(--accent);background:var(--accent-dim);">'
+            + '<div class="flex" style="justify-content:space-between;align-items:flex-start;">'
+            + '<div><div style="font-size:17px;font-weight:800;">Pro</div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:3px;">推荐</div></div>'
+            + '<div style="text-align:right;"><div class="num" style="font-size:22px;font-weight:800;color:var(--accent-strong);">$99<span style="font-size:14px;font-weight:600;">/月</span></div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:2px;">年付省 15%</div></div></div>'
+            + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-subtle);">'
+            + '<div class="flex" style="gap:8px;padding:6px 0;"><span class="badge badge--ok">✓</span><span class="tiny" style="color:var(--text-secondary);">最多 10 个策略组合</span></div>'
+            + '<div class="flex" style="gap:8px;padding:6px 0;"><span class="badge badge--ok">✓</span><span class="tiny" style="color:var(--text-secondary);">可连接交易所 API 自动执行</span></div>'
+            + '<div class="flex" style="gap:8px;padding:6px 0;"><span class="badge badge--ok">✓</span><span class="tiny" style="color:var(--text-secondary);">全部策略信号推送</span></div>'
+            + '<div class="flex" style="gap:8px;padding:6px 0;"><span class="badge badge--ok">✓</span><span class="tiny" style="color:var(--text-secondary);">止损与风控设置</span></div>'
+            + '</div>'
+            + '<button class="btn btn--primary btn--block" style="margin-top:14px;">选择 Pro · 按月订阅</button>'
+            + '</div>'
+
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;">'
+            + '<div style="font-size:17px;font-weight:800;">Plus</div>'
+            + '<div class="num" style="font-size:22px;font-weight:800;">$29<span style="font-size:14px;font-weight:600;">/月</span></div></div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:6px;">最多 3 个组合，仅信号推送</div>'
+            + '<button class="btn btn--secondary btn--block" style="margin-top:12px;">选择 Plus</button>'
+            + '</div>'
+
+            + '<div class="card">'
+            + '<div class="flex" style="justify-content:space-between;">'
+            + '<div style="font-size:17px;font-weight:800;">Max</div>'
+            + '<div class="num" style="font-size:22px;font-weight:800;">$299<span style="font-size:14px;font-weight:600;">/月</span></div></div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:6px;">不限组合数量，全部功能</div>'
+            + '<button class="btn btn--ghost btn--block" style="margin-top:12px;">选择 Max</button>'
+            + '</div>'
+
+            + '<div class="tiny" style="text-align:center;color:var(--text-muted);margin-top:16px;line-height:1.6;">'
+            + '订阅后，按"策略 × 币种"开通组合，再连接交易所 API 即可启用自动交易。'
+            + '</div>'
+        };
+      });
+
+      PUSH.register('api-connect', function (ctx) {
+        var ex = ctx.ex || 'OKX';
+        return {
+          title: '连接 ' + ex,
+          body:
+            '<div class="card" style="margin-bottom:12px;background:var(--bg-elevated);">'
+            + '<div style="font-size:16px;font-weight:800;margin-bottom:10px;">为什么需要连接交易所？</div>'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.6;">'
+            + '自动交易需要通过你的交易所 API Key 读取账户、下单与挂保护单。'
+            + '<b>资金始终留在你的交易所账户内</b>，平台不托管、不划转、不提现。'
+            + 'API Key 加密存储，只用于执行你已订阅的策略组合。'
+            + '</div></div>'
+
+            + '<div class="sec"><span>连接步骤</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">1. 在 ' + ex + ' 创建 API Key</div>'
+            + '<div class="tiny" style="color:var(--text-muted);line-height:1.6;margin-bottom:10px;">'
+            + '登录 ' + ex + ' → 账户 → API 管理 → 创建 API Key，权限勾选：<b>读取 + 交易</b>（不要勾选提现）。'
+            + '</div>'
+            + '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">2. 复制并粘贴到下方</div>'
+            + '<label class="tiny" style="display:block;margin-top:10px;color:var(--text-muted);">API Key</label>'
+            + '<input type="text" placeholder="粘贴你的 API Key" style="width:100%;margin-top:4px;padding:10px 12px;border-radius:8px;border:1px solid var(--border-subtle);background:var(--bg-surface);color:var(--text-primary);font-size:13px;">'
+            + '<label class="tiny" style="display:block;margin-top:10px;color:var(--text-muted);">Secret Key</label>'
+            + '<input type="password" placeholder="粘贴你的 Secret" style="width:100%;margin-top:4px;padding:10px 12px;border-radius:8px;border:1px solid var(--border-subtle);background:var(--bg-surface);color:var(--text-primary);font-size:13px;">'
+            + '<label class="tiny" style="display:block;margin-top:10px;color:var(--text-muted);">Passphrase（如有）</label>'
+            + '<input type="password" placeholder="部分交易所需要" style="width:100%;margin-top:4px;padding:10px 12px;border-radius:8px;border:1px solid var(--border-subtle);background:var(--bg-surface);color:var(--text-primary);font-size:13px;">'
+            + '</div>'
+
+            + '<div class="card" style="margin-bottom:12px;background:rgba(232,180,92,0.08);border:1px solid rgba(232,180,92,0.3);">'
+            + '<div class="flex" style="gap:8px;"><span class="badge badge--warn">安全</span>'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.6;">'
+            + 'API Key 加密存储；每次下单前会再次校验权限、余额与止损。未通过校验不会提交订单。'
+            + '</div></div></div>'
+
+            + '<button class="btn btn--primary btn--block">验证并保存</button>'
+            + '<button class="btn btn--ghost btn--block" style="margin-top:10px;" data-push-back>取消</button>'
+        };
+      });
+    })();
+
+    // ============ 二级页面内容：信号详情 + 新闻情报详情（把情报翻译成账户下一步） ============
+    (function () {
+      PUSH.register('signal-detail', function (ctx) {
+        var sym = ctx.symbol || 'PENGU-USDT';
+        var tone = ctx.tone || '放量上涨';
+        var dirUp = ctx.dir !== 'down';
+        return {
+          title: '信号详情',
+          body:
+            '<div class="card card--focus" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;">'
+            + '<div class="flex" style="gap:10px;"><span class="item__ico ' + (dirUp ? 'ico-up' : 'ico-down') + '" style="width:40px;height:40px;font-size:16px;">' + (dirUp ? '▲' : '▼') + '</span>'
+            + '<div><div style="font-size:17px;font-weight:800;">' + sym + '</div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:2px;">' + tone + ' · 待验证信号</div></div></div>'
+            + '<span class="badge badge--warn badge--square">信号待确认</span></div></div>'
+
+            + '<div class="sec"><span>信号证据</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">成交额排名</span><span class="num" style="font-weight:700;">#61 → #24</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">24h 成交额</span><span class="num" style="font-weight:700;">9,820 万</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">价格变化</span><span class="num pnl-pos" style="font-weight:700;">+18.6%</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;"><span style="font-size:13px;color:var(--text-muted);">量价信号</span><span style="font-weight:700;">' + tone + '</span></div>'
+            + '</div>'
+
+            + '<div class="sec"><span>执行链路</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.7;">'
+            + '当前状态：<b style="color:var(--status-warning);">策略条件待确认</b>。'
+            + '这是一条观察信号，不是买入建议。系统会等待价格结构与策略规则二次确认后，才可能生成可执行任务；'
+            + '且真实开仓仍需通过余额、精度、止损与风控门禁。'
+            + '</div></div>'
+
+            + '<div class="card" style="margin-bottom:16px;border-color:rgba(240,100,91,0.3);background:rgba(240,100,91,0.06);">'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.6;">'
+            + '<b style="color:var(--status-danger);">风险提示：</b>成交额排名上升但价格证据尚不充分，追高风险较大。建议先加入观察，等待二次确认。'
+            + '</div></div>'
+
+            + '<button class="btn btn--primary btn--block">加入观察</button>'
+            + '<button class="btn btn--secondary btn--block" style="margin-top:10px;" data-push="coin-detail" data-ctx=\'{"sym":"' + sym + '"}\'>查看价格走势</button>'
+        };
+      });
+
+      PUSH.register('news-detail', function (ctx) {
+        var title = ctx.title || 'Binance 将上线 ASTER 永续合约并开放最高 20 倍杠杆';
+        var cat = ctx.cat || '交易所公告';
+        return {
+          title: '情报详情',
+          body:
+            '<div class="flex" style="gap:6px;margin-bottom:10px;flex-wrap:wrap;">'
+            + '<span class="badge badge--info">' + cat + '</span>'
+            + '<span class="badge badge--muted">Binance</span>'
+            + '<span class="tiny" style="color:var(--text-muted);align-self:center;">15 分钟内 · 09-01 14:22</span></div>'
+            + '<div style="font-size:18px;font-weight:800;line-height:1.4;margin-bottom:14px;">' + title + '</div>'
+
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="tiny" style="color:var(--accent-strong);font-weight:700;margin-bottom:6px;">AI 分析</div>'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.7;">'
+            + '新永续合约上线通常带来短期流动性与波动上升，对该标的偏多。可作为动量策略候选，但上线初期点差与资金费波动较大。'
+            + '</div></div>'
+
+            + '<div class="sec"><span>影响判断</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">关联标的</span><span style="font-weight:700;">ASTER-USDT</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">影响方向</span><span class="pnl-pos" style="font-weight:700;">↑ 偏多</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">影响热度</span><span class="num" style="font-weight:700;">86%</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;"><span style="font-size:13px;color:var(--text-muted);">可信度</span><span class="num" style="font-weight:700;">81%</span></div>'
+            + '</div>'
+
+            + '<div class="sec"><span>下一步动作</span></div>'
+            + '<div class="card" style="margin-bottom:16px;">'
+            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.7;">'
+            + '这是情报参考，不是交易指令。若要基于此交易，需先在动量雷达确认该标的的价格与策略信号，'
+            + '并确保组合已配置止损与风控。<b>未设止损不下单。</b>'
+            + '</div></div>'
+
+            + '<button class="btn btn--primary btn--block" data-push="coin-detail" data-ctx=\'{"sym":"ASTER-USDT"}\'>查看 ASTER 价格</button>'
+            + '<button class="btn btn--ghost btn--block" style="margin-top:10px;" data-push-back>返回</button>'
+        };
+      });
+    })();
+
+    // ============ 二级页面内容：币种详情 + 搜索 ============
+    (function () {
+      // 精简走势条：窄屏用轻量柱状替代完整 K 线（与自动交易屏一致口径）
+      function sparkBars() {
+        var hs = [40, 55, 48, 70, 62, 85, 78, 92, 74, 88, 96, 100];
+        return '<div class="spark" style="height:64px;gap:3px;">'
+          + hs.map(function (h) { return '<span style="height:' + h + '%"></span>'; }).join('') + '</div>';
+      }
+      PUSH.register('coin-detail', function (ctx) {
+        var sym = ctx.sym || 'BTC-USDT';
+        return {
+          title: sym,
+          barRight: '<button class="push__back" aria-label="加自选"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17.8 6.6 20l1-6.1L3.2 9.5l6.1-.9z"/></svg></button>',
+          body:
+            '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;align-items:flex-start;">'
+            + '<div><div class="num" style="font-size:26px;font-weight:800;">1.8624</div>'
+            + '<div class="num pnl-pos" style="font-size:13px;font-weight:700;margin-top:2px;">+6.42% · +0.1124</div></div>'
+            + '<span class="badge badge--muted badge--square">仅行情，不含下单</span></div>'
+            + '<div style="margin-top:12px;">' + sparkBars() + '</div>'
+            + '<div class="chips" style="margin-top:10px;">'
+            + '<button class="chip">15m</button><button class="chip is-active">1H</button>'
+            + '<button class="chip">4H</button><button class="chip">1D</button></div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:8px;">精简走势示意，完整 K 线、深度在桌面工作台查看。</div>'
+            + '</div>'
+
+            + '<div class="sec"><span>关键数据</span></div>'
+            + '<div class="card" style="margin-bottom:12px;">'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">24h 最高 / 最低</span><span class="num" style="font-weight:700;">1.88 / 1.72</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">24h 成交额</span><span class="num" style="font-weight:700;">2.14 亿 USDT</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border-subtle);"><span style="font-size:13px;color:var(--text-muted);">资金费率</span><span class="num pnl-pos" style="font-weight:700;">+0.0125%</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:9px 0;"><span style="font-size:13px;color:var(--text-muted);">合约类型</span><span style="font-weight:700;">永续 · USDT 本位</span></div>'
+            + '</div>'
+
+            + '<div class="sec"><span>该币相关信号</span><span class="tiny" style="color:var(--text-muted);">来自动量雷达</span></div>'
+            + '<div class="card card--tap" data-push="signal-detail" data-ctx=\'{"symbol":"' + sym + '","tone":"放量上涨","dir":"up"}\' style="margin-bottom:16px;">'
+            + '<div class="flex" style="justify-content:space-between;">'
+            + '<div class="flex" style="gap:10px;"><span class="item__ico ico-up" style="width:34px;height:34px;font-size:14px;">▲</span>'
+            + '<div><div style="font-weight:700;font-size:13.5px;">放量上涨信号</div>'
+            + '<div class="tiny" style="color:var(--text-muted);margin-top:2px;">成交额排名跃迁 · 待确认</div></div></div>'
+            + '<span class="badge badge--warn">待确认</span></div></div>'
+
+            + '<button class="btn btn--secondary btn--block" data-push-back>返回</button>'
+        };
+      });
+
+      PUSH.register('search', function () {
+        function hotTag(t) { return '<button class="chip" style="margin:0 6px 8px 0;">' + t + '</button>'; }
+        return {
+          title: '搜索',
+          onMount: function (el) { var i = el.querySelector('input'); if (i) i.focus(); },
+          body:
+            '<div class="card flex mkt-search" style="padding:0 14px;gap:10px;margin-bottom:16px;">'
+            + '<svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-search"/></svg>'
+            + '<input type="search" placeholder="搜索币种、策略或情报" style="flex:1;height:44px;padding:0;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;">'
+            + '</div>'
+            + '<div class="sec"><span>热搜</span></div>'
+            + '<div style="display:flex;flex-wrap:wrap;margin-bottom:16px;">'
+            + hotTag('🔥 SOL') + hotTag('BTC') + hotTag('ETH') + hotTag('ASTER') + hotTag('PENGU') + hotTag('DOGE') + hotTag('WIF')
+            + '</div>'
+            + '<div class="sec"><span>最近搜索</span><span class="sec__link">清除</span></div>'
+            + '<div class="card">'
+            + '<div class="flex" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-subtle);"><span data-push="coin-detail" data-ctx=\'{"sym":"BTC-USDT"}\' style="cursor:pointer;">BTC-USDT</span><span class="tiny" style="color:var(--text-muted);">永续</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border-subtle);"><span data-push="coin-detail" data-ctx=\'{"sym":"ASTER-USDT"}\' style="cursor:pointer;">ASTER-USDT</span><span class="tiny" style="color:var(--text-muted);">永续</span></div>'
+            + '<div class="flex" style="justify-content:space-between;padding:10px 0;"><span data-push="coin-detail" data-ctx=\'{"sym":"ETH-USDT"}\' style="cursor:pointer;">ETH-USDT</span><span class="tiny" style="color:var(--text-muted);">永续</span></div>'
+            + '</div>'
+        };
       });
     })();
 
@@ -684,7 +1374,8 @@
       var newsHost = document.getElementById('newsList');
       if (newsHost) newsHost.innerHTML = news.map(function (n) {
         var d = dirMap[n.dir], p = prio(n);
-        return '<article class="card card--tap">'
+        var ctx = JSON.stringify({ title: n.title, cat: n.cat }).replace(/"/g, '&quot;');
+        return '<article class="card card--tap" data-push="news-detail" data-ctx="' + ctx + '">'
           + '<div class="flex" style="justify-content:space-between;">'
           + '<span class="badge badge--muted">' + n.cat + ' · ' + n.src + '</span>'
           + (n.lead ? '<span class="badge badge--warn badge--square">重点事件</span>' : '<span class="tiny muted">' + n.time + '</span>')
@@ -740,7 +1431,7 @@
         { sev: 'danger', label: '这次信号缺少止损设置，因此没有下单', combo: 'ASTER-USDT · Market Velocity', action: '补全止损配置' },
         { sev: 'warn', label: '交易平台连接未通过', combo: '币安 · 全部组合', action: '检查交易平台连接' }
       ];
-      var iHost = document.getElementById('autotradeIssues');
+      var iHost = document.getElementById('overviewTodos');
       if (iHost) iHost.innerHTML = issues.map(function (it) {
         return '<div class="card card--tap">'
           + '<div class="flex" style="justify-content:space-between;gap:10px;">'
@@ -748,6 +1439,71 @@
           + '<span class="tiny muted">' + it.combo + '</span></div>'
           + '<div style="font-size:13px;font-weight:600;margin-top:8px;line-height:1.45;">' + it.label + '</div>'
           + '<button class="btn btn--secondary btn--sm" style="margin-top:10px;">' + it.action + '</button>'
+          + '</div>';
+      }).join('');
+    })();
+
+    // ============ 持仓屏：真实仓位（每个仓位含止损保护状态，回答"有没有裸单"） ============
+    (function () {
+      var positions = [
+        { symbol: 'ASTER-USDT', ex: 'OKX', combo: 'Market Velocity', dir: 'long',
+          qty: '1,680', entry: '1.7420', mark: '1.8624', pnl: '+80.6', pnlPct: '+6.9%', stop: true, stopAt: '1.6800' },
+        { symbol: 'SOL-USDT', ex: 'OKX', combo: 'Vegas 趋势跟随', dir: 'long',
+          qty: '9.2', entry: '168.30', mark: '170.05', pnl: '+15.8', pnlPct: '+1.0%', stop: true, stopAt: '160.00' }
+      ];
+      var dir = { long: { c: 'dir-long', t: '多', pre: '↑' }, short: { c: 'dir-short', t: '空', pre: '↓' } };
+      var host = document.getElementById('positionList');
+      if (host) host.innerHTML = positions.map(function (p) {
+        var d = dir[p.dir], up = p.pnl.indexOf('+') === 0;
+        var ctx = JSON.stringify({ name: p.symbol + ' · ' + p.combo, running: true }).replace(/"/g, '&quot;');
+        return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '">'
+          + '<div class="flex" style="justify-content:space-between;">'
+          + '<div><div style="font-weight:800;font-size:14.5px;">' + p.symbol
+          + ' <span class="badge badge--muted" style="margin-left:4px;"><span class="' + d.c + '">' + d.pre + ' ' + d.t + '</span></span></div>'
+          + '<div class="tiny muted" style="margin-top:3px;">' + p.ex + ' · ' + p.combo + '</div></div>'
+          + '<div class="item__right"><div class="num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="font-weight:800;font-size:15px;">' + p.pnl + '</div>'
+          + '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '">' + p.pnlPct + '</div></div></div>'
+          + '<div class="rows" style="margin-top:10px;">'
+          + '<div class="row"><span class="row__k">数量 / 开仓价</span><span class="row__v num">' + p.qty + ' @ ' + p.entry + '</span></div>'
+          + '<div class="row"><span class="row__k">标记价</span><span class="row__v num">' + p.mark + '</span></div>'
+          + '<div class="row"><span class="row__k">止损保护</span><span class="row__v">'
+          + (p.stop ? '<span class="badge badge--ok">已挂 ' + p.stopAt + '</span>' : '<span class="badge badge--danger badge--square">未挂止损</span>')
+          + '</span></div></div></div>';
+      }).join('');
+    })();
+
+    // ============ 概览屏：组合状态速览 + 今日重点信号 ============
+    (function () {
+      // 组合速览（精简版，点击去持仓/组合详情）
+      var combos = [
+        { name: 'Market Velocity', symbol: 'ASTER-USDT', mode: '自动交易', st: 'ok', stt: '运行中', pnl: '+80.6' },
+        { name: 'Vegas 趋势跟随', symbol: 'BTC-USDT', mode: '仅接收信号', st: 'warn', stt: '5天后到期', pnl: '—' }
+      ];
+      var cHost = document.getElementById('overviewCombos');
+      if (cHost) cHost.innerHTML = combos.map(function (c) {
+        var up = c.pnl.indexOf('+') === 0;
+        var full = c.symbol + ' · ' + c.name;
+        var ctx = JSON.stringify({ name: full, running: c.mode === '自动交易' }).replace(/"/g, '&quot;');
+        return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '"><div class="flex" style="justify-content:space-between;">'
+          + '<div><div style="font-weight:700;font-size:13.5px;">' + c.name + ' <span class="muted">×</span> ' + c.symbol + '</div>'
+          + '<div class="tiny muted" style="margin-top:2px;">' + c.mode + '</div></div>'
+          + '<div class="item__right"><span class="badge ' + (c.st === 'ok' ? 'badge--ok' : 'badge--warn') + '">' + c.stt + '</span>'
+          + (c.pnl !== '—' ? '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="margin-top:4px;">' + c.pnl + '</div>' : '')
+          + '</div></div></div>';
+      }).join('');
+
+      // 今日重点信号（精简，引导去发现屏）
+      var signals = [
+        { symbol: 'PENGU-USDT', tone: '放量上涨', dir: 'up', hint: '等待价格与策略确认' },
+        { symbol: 'WIF-USDT', tone: '排名跃迁', dir: 'up', hint: '价格证据不足，先观察' }
+      ];
+      var sHost = document.getElementById('overviewSignals');
+      if (sHost) sHost.innerHTML = signals.map(function (s) {
+        var ctx = JSON.stringify({ symbol: s.symbol, tone: s.tone, dir: s.dir }).replace(/"/g, '&quot;');
+        return '<div class="card card--tap flex" data-push="signal-detail" data-ctx="' + ctx + '" style="justify-content:space-between;">'
+          + '<div class="flex"><span class="item__ico ' + (s.dir === 'up' ? 'ico-up' : 'ico-down') + '" style="width:34px;height:34px;font-size:14px;">' + (s.dir === 'up' ? '▲' : '▼') + '</span>'
+          + '<div><div style="font-weight:700;font-size:13.5px;">' + s.symbol + '</div><div class="tiny muted" style="margin-top:2px;">' + s.tone + ' · ' + s.hint + '</div></div></div>'
+          + '<svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-chevron"/></svg>'
           + '</div>';
       }).join('');
     })();
@@ -769,7 +1525,9 @@
       var cHost = document.getElementById('radarCandidates');
       if (cHost) cHost.innerHTML = candidates.map(function (c) {
         var r = readyMap[c.readiness];
-        return '<div class="card">'
+        var sigCtx = JSON.stringify({ symbol: c.symbol, tone: c.tone, dir: c.dir }).replace(/"/g, '&quot;');
+        var coinCtx = JSON.stringify({ sym: c.symbol }).replace(/"/g, '&quot;');
+        return '<div class="card card--tap" data-push="signal-detail" data-ctx="' + sigCtx + '">'
           + '<div class="flex" style="justify-content:space-between;">'
           + '<div class="flex"><span class="item__ico ' + (c.dir === 'up' ? 'ico-up' : 'ico-down') + '" style="width:34px;height:34px;font-size:15px;">' + (c.dir === 'up' ? '▲' : '▼') + '</span>'
           + '<div><div style="font-weight:700;">' + c.symbol + '</div><div class="tiny muted">' + c.ex + ' · ' + c.tone + '</div></div></div>'
@@ -777,7 +1535,7 @@
           + '<div class="tiny" style="margin-top:9px;line-height:1.5;">' + c.hint + '</div>'
           + '<div class="flex" style="justify-content:space-between;margin-top:10px;">'
           + '<span class="badge badge--muted badge--square">' + c.blocker + '</span>'
-          + '<span class="flex" style="gap:8px;"><span class="sec__link">加入观察</span><span class="sec__link">查看价格</span></span>'
+          + '<span class="flex" style="gap:8px;"><span class="sec__link">加入观察</span><span class="sec__link" data-push="coin-detail" data-ctx="' + coinCtx + '">查看价格</span></span>'
           + '</div></div>';
       }).join('');
 
@@ -815,7 +1573,8 @@
       var sHost = document.getElementById('strategyList');
       if (sHost) sHost.innerHTML = strategies.map(function (s) {
         var pending = s.ret === '—';
-        return '<article class="card card--tap">'
+        var ctx = JSON.stringify({ name: s.name }).replace(/"/g, '&quot;');
+        return '<article class="card card--tap" data-push="strategy-detail" data-ctx="' + ctx + '">'
           + '<div class="flex" style="justify-content:space-between;gap:8px;">'
           + '<span style="font-weight:800;font-size:14.5px;line-height:1.35;">' + s.name + '</span>'
           + '<span class="badge ' + (riskTone[s.risk] || 'badge--muted') + '">风险 ' + s.risk + '</span></div>'
@@ -862,6 +1621,8 @@
       var cbHost = document.getElementById('userCombos');
       if (cbHost) cbHost.innerHTML = combos.map(function (c) {
         var st = stMap[c.status], rd = rdMap[c.readiness];
+        var comboName = c.symbol + ' · ' + c.strategy;
+        var ctx = JSON.stringify({ name: comboName, running: (c.mode || '').indexOf('自动') >= 0 }).replace(/"/g, '&quot;');
         return '<div class="card">'
           + '<div class="flex" style="justify-content:space-between;">'
           + '<div><div style="font-weight:800;font-size:14px;">' + c.strategy + ' <span class="muted">×</span> ' + c.symbol + '</div>'
@@ -872,10 +1633,53 @@
           + '<span class="tiny muted" style="align-self:center;">' + c.expires + '</span></div>'
           + '<div class="tiny" style="margin-top:9px;color:' + (c.readiness === 'ready' ? 'var(--text-muted)' : 'var(--status-warning)') + ';line-height:1.5;">' + c.note + '</div>'
           + '<div class="flex" style="gap:8px;margin-top:11px;">'
-          + '<button class="btn btn--secondary btn--sm grow">' + (c.readiness === 'ready' ? '续订' : '立即处理') + '</button>'
-          + '<button class="btn btn--ghost btn--sm">组合管理 ▾</button></div>'
+          + '<button class="btn btn--secondary btn--sm grow" data-'
+          + (c.readiness === 'ready' ? 'sheet="combo-renew"' : 'push="combo-detail"') + ' data-ctx="' + ctx + '">'
+          + (c.readiness === 'ready' ? '续订' : '立即处理') + '</button>'
+          + '<button class="btn btn--ghost btn--sm" data-sheet="combo-manage" data-ctx="' + ctx + '">组合管理 ▾</button></div>'
           + '</div>';
       }).join('');
+    })();
+
+    // ============ 探索/行情：币种列表 + 一级分段切换（绿涨红跌，与全站一致） ============
+    (function () {
+      // 占位行情样本，字段对齐 OKX 行情页：符号/项目名/成交额/最新价/USD估值/涨跌%
+      var coins = [
+        { sym: 'LAUSDT', name: 'Lagrange', vol: '1,317.69万', last: '0.06304', usd: '0.063003', chg: 9.53, c: '#3a7bd5' },
+        { sym: 'ZKPUSDT', name: 'zkPass', vol: '297.72万', last: '0.04538', usd: '0.045354', chg: 4.36, c: '#111' },
+        { sym: 'JELLYUSDT', name: 'jelly-my-jelly', vol: '30.11万', last: '0.055', usd: '0.054968', chg: 3.89, c: '#8a5cf6' },
+        { sym: 'MINIMAXUSDT', name: 'MiniMax Group', vol: '1,621.67万', last: '44.2', usd: '44.1744', chg: 3.39, c: '#e8455f' },
+        { sym: 'BOMEUSDT', name: 'BOOK OF MEME', vol: '394.5万', last: '0.0008887', usd: '0.00088818', chg: 3.38, c: '#4c8a3f' },
+        { sym: 'BTCUSDT', name: 'Bitcoin', vol: '68.02亿', last: '77,412.5', usd: '77,367.60', chg: 0.01, c: '#f7931a' },
+        { sym: 'ETHUSDT', name: 'Ethereum', vol: '71.21亿', last: '2,411.78', usd: '2,410.38', chg: -0.23, c: '#627eea' },
+        { sym: 'DOGEUSDT', name: 'Dogecoin', vol: '2.09亿', last: '0.08123', usd: '0.081183', chg: -0.50, c: '#c3a634' }
+      ];
+      function initial(sym) { return sym.replace('USDT', '').slice(0, 2); }
+      var host = document.getElementById('marketList');
+      if (host) host.innerHTML = coins.map(function (k) {
+        var up = k.chg >= 0;
+        var chgTxt = (up ? '+' : '') + k.chg.toFixed(2) + '%';
+        var ctx = JSON.stringify({ sym: k.sym.replace('USDT', '-USDT') }).replace(/"/g, '&quot;');
+        return '<div class="mkt-row" data-push="coin-detail" data-ctx="' + ctx + '">'
+          + '<div class="mkt-row__name">'
+          + '<span class="mkt-coin" style="background:' + k.c + ';">' + initial(k.sym) + '</span>'
+          + '<div class="mkt-coin-meta">'
+          + '<div class="mkt-coin-sym">' + k.sym + '<span class="mkt-tag-perp">永续</span></div>'
+          + '<div class="mkt-coin-sub">' + k.name + ' · $' + k.vol + '</div>'
+          + '</div></div>'
+          + '<div class="mkt-price"><div class="mkt-price__last num">' + k.last + '</div><div class="mkt-price__usd num">$' + k.usd + '</div></div>'
+          + '<div class="mkt-chg ' + (up ? 'mkt-chg--up' : 'mkt-chg--down') + ' num">' + chgTxt + '</div>'
+          + '</div>';
+      }).join('');
+
+      // 一级分段切换（自选/现货/合约/总览，演示高亮）
+      var mktTabs = document.getElementById('mktTabs');
+      if (mktTabs) mktTabs.addEventListener('click', function (e) {
+        var b = e.target.closest('.mkt-tab');
+        if (!b) return;
+        mktTabs.querySelectorAll('.mkt-tab').forEach(function (x) { x.classList.remove('is-active'); });
+        b.classList.add('is-active');
+      });
     })();
   </script>
 </body>
