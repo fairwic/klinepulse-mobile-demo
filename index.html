@@ -1373,6 +1373,88 @@
             min-width: 0;
         }
 
+        /* ============ 智能待办与健康状态折叠条 ============ */
+        .todos-status-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            transition: all 180ms ease;
+        }
+
+        .todos-status-card.has-issues {
+            border-color: rgba(240, 100, 91, 0.35);
+            background: linear-gradient(170deg, rgba(240, 100, 91, 0.05) 0%, var(--bg-surface) 100%);
+        }
+
+        .todos-status-card.all-good {
+            border-color: rgba(99, 214, 154, 0.25);
+            background: linear-gradient(170deg, rgba(99, 214, 154, 0.05) 0%, var(--bg-surface) 100%);
+        }
+
+        .todos-accordion-body {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-subtle);
+            animation: fade 200ms ease;
+        }
+
+        .todos-accordion-body.is-open {
+            display: block;
+        }
+
+        /* ============ 动态策略与新老用户场景流 ============ */
+        .strategy-broadcast-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: linear-gradient(90deg, rgba(232, 180, 92, 0.16) 0%, rgba(232, 180, 92, 0.05) 100%);
+            border: 1px solid rgba(232, 180, 92, 0.35);
+            border-radius: 12px;
+            padding: 9px 12px;
+            margin-bottom: 12px;
+            animation: fade 220ms ease;
+        }
+
+        .strategy-featured-card {
+            background: linear-gradient(160deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-card);
+            padding: 14px;
+            box-shadow: var(--shadow-card), 0 0 16px rgba(232, 180, 92, 0.06);
+            margin-bottom: 10px;
+        }
+
+        .persona-switch-bar {
+            display: inline-flex;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 999px;
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .persona-btn {
+            background: none;
+            border: 0;
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 140ms ease;
+        }
+
+        .persona-btn.is-active {
+            background: var(--bg-surface);
+            color: var(--accent-strong);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        }
+
         /* ============ 2列交易员卡片网格 ============ */
         .trader-grid {
             display: grid;
@@ -1825,19 +1907,36 @@
                     </div>
                 </div>
 
-                <!-- 风险待办：有没有事要马上处理（最高优先，用户可操作） -->
-                <div class="sec">
-                    <div class="sec__head"><span class="sec__title">需要处理</span><span class="sec__link"
-                            data-toast="账户状态已刷新" data-toast-kind="info">刷新状态</span></div>
-                    <div id="overviewTodos" class="stack"></div>
+                <!-- 智能系统健康度与待办巡检栏（默认极简收拢，无事报平安，有事按需展开） -->
+                <div id="overviewHealthSection"></div>
+
+                <!-- 动态场景切换（原型体验辅助）：模拟新用户 vs 老用户 -->
+                <div class="flex" style="justify-content:space-between;margin:0 2px 10px;align-items:center;">
+                    <span class="tiny muted">当前体验视态</span>
+                    <div class="persona-switch-bar" id="personaSwitchBar">
+                        <button class="persona-btn" data-persona="new">新用户 (0组合)</button>
+                        <button class="persona-btn is-active" data-persona="pro">老用户 (2运行中)</button>
+                    </div>
                 </div>
 
-                <!-- 组合状态速览 -->
-                <div class="sec">
-                    <div class="sec__head"><span class="sec__title">我的组合</span><span class="sec__link"
-                            data-push="positions">查看持仓 →</span></div>
-                    <div id="overviewCombos" class="stack"></div>
+                <!-- 💡 新策略上线轻量广播条（老用户专属感知，支持随时一键关闭） -->
+                <div class="strategy-broadcast-banner" id="newStrategyBanner">
+                    <div class="flex" style="gap:8px;min-width:0;" data-push="marketplace">
+                        <span style="font-size:14px;">✨</span>
+                        <div
+                            style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                            <b style="color:var(--accent-strong);">新策略上架</b> · SOL 动量高频 v2.0 (胜率 69%)
+                        </div>
+                    </div>
+                    <div class="flex" style="gap:6px;flex:0 0 auto;">
+                        <span class="tiny sec__link" data-push="marketplace" style="cursor:pointer;">查看 →</span>
+                        <button type="button" id="closeStrategyBanner"
+                            style="background:none;border:0;color:var(--text-muted);font-size:13px;padding:2px 4px;cursor:pointer;">✕</button>
+                    </div>
                 </div>
+
+                <!-- 动态核心区域：新用户渲染「🔥 热门实盘策略」，老用户渲染「我的组合速览」 -->
+                <div id="overviewDynamicSection"></div>
 
                 <!-- 今日自动执行摘要（自动交易用户） -->
                 <div class="sec">
@@ -3659,24 +3758,70 @@
                     + '</div>';
             }).join('');
 
-            // 阻塞态字典：直接取自真实 AUTO_TRADE_ISSUE_SCENARIO 的 label / actionLabel
+            // ============ 智能待办与巡检：默认折叠/无事报平安 ============
             var issues = [
-                {sev: 'danger', label: '这次信号缺少止损设置，因此没有下单', combo: 'ASTER-USDT · Market Velocity', action: '补全止损配置', go: 'sheet:combo-risk'},
-                {sev: 'warn', label: '交易平台连接未通过', combo: '币安 · 全部组合', action: '检查交易平台连接', go: 'push:api-connect'}
+                {sev: 'danger', label: 'ASTER-USDT 缺少止损设置，自动拦截下单', combo: 'Market Velocity', action: '补全止损配置', go: 'sheet:combo-risk'},
+                {sev: 'warn', label: '币安交易所 API 连通性待验证', combo: '全部组合', action: '检查连接', go: 'push:api-connect'}
             ];
-            var iHost = document.getElementById('overviewTodos');
-            if (iHost) iHost.innerHTML = issues.map(function (it) {
-                var attr = it.go.indexOf('sheet:') === 0
-                    ? 'data-sheet="' + it.go.slice(6) + '"'
-                    : 'data-push="' + it.go.slice(5) + '"';
-                return '<div class="card">'
-                    + '<div class="flex" style="justify-content:space-between;gap:10px;">'
-                    + '<span class="badge badge--' + it.sev + ' badge--square">需处理</span>'
-                    + '<span class="tiny muted">' + it.combo + '</span></div>'
-                    + '<div style="font-size:13px;font-weight:600;margin-top:8px;line-height:1.45;">' + it.label + '</div>'
-                    + '<button class="btn btn--secondary btn--sm" style="margin-top:10px;" ' + attr + '>' + it.action + '</button>'
-                    + '</div>';
-            }).join('');
+
+            var healthHost = document.getElementById('overviewHealthSection');
+            var isTodosExpanded = false;
+
+            function renderHealthStatus() {
+                if (!healthHost) return;
+                var count = issues.length;
+
+                if (count === 0) {
+                    // 全绿正常状态：只占 1 行轻量绿色胶囊，不给用户增加心理负担
+                    healthHost.innerHTML = '<div class="todos-status-card all-good flex" style="justify-content:space-between;align-items:center;">'
+                        + '<div class="flex" style="gap:8px;">'
+                        + '<span class="badge badge--ok" style="padding:2px 7px;">系统健康</span>'
+                        + '<span style="font-size:12px;color:var(--text-secondary);font-weight:600;">所有 API 与风控守护正常运行中</span>'
+                        + '</div>'
+                        + '<span class="tiny num" style="color:var(--status-success);font-weight:700;">● 0 阻塞</span>'
+                        + '</div>';
+                } else {
+                    // 存在异常时：默认单行折叠提示 + 展开查看按钮
+                    var issueItems = issues.map(function (it) {
+                        var attr = it.go.indexOf('sheet:') === 0
+                            ? 'data-sheet="' + it.go.slice(6) + '"'
+                            : 'data-push="' + it.go.slice(5) + '"';
+                        return '<div style="margin-bottom:8px;padding:8px 10px;background:var(--bg-subtle);border-radius:10px;border:1px solid var(--border-subtle);">'
+                            + '<div class="flex" style="justify-content:space-between;gap:8px;">'
+                            + '<span class="badge badge--' + it.sev + ' badge--square">' + (it.sev === 'danger' ? '已拦截' : '待处理') + '</span>'
+                            + '<span class="tiny muted">' + it.combo + '</span>'
+                            + '</div>'
+                            + '<div style="font-size:12.5px;font-weight:600;margin:6px 0 8px;line-height:1.4;">' + it.label + '</div>'
+                            + '<button class="btn btn--secondary btn--sm btn--block" ' + attr + '>' + it.action + ' →</button>'
+                            + '</div>';
+                    }).join('');
+
+                    healthHost.innerHTML = '<div class="todos-status-card has-issues">'
+                        + '<div class="flex" id="toggleTodosHeader" style="justify-content:space-between;align-items:center;cursor:pointer;">'
+                        + '<div class="flex" style="gap:8px;">'
+                        + '<span class="badge badge--danger badge--square">' + count + ' 项待处理</span>'
+                        + '<span style="font-size:12.5px;font-weight:700;color:var(--text-primary);">缺止损拦截 & API 检查</span>'
+                        + '</div>'
+                        + '<span class="tiny sec__link" style="display:flex;align-items:center;gap:2px;">'
+                        + (isTodosExpanded ? '收起 ▴' : '展开处理 ▾')
+                        + '</span>'
+                        + '</div>'
+                        + '<div class="todos-accordion-body ' + (isTodosExpanded ? 'is-open' : '') + '">'
+                        + issueItems
+                        + '</div>'
+                        + '</div>';
+
+                    var header = document.getElementById('toggleTodosHeader');
+                    if (header) {
+                        header.addEventListener('click', function () {
+                            isTodosExpanded = !isTodosExpanded;
+                            renderHealthStatus();
+                        });
+                    }
+                }
+            }
+
+            renderHealthStatus();
         })();
 
         // ============ 持仓屏：真实仓位（每个仓位含止损保护状态，回答"有没有裸单"） ============
@@ -3712,30 +3857,117 @@
             }).join('');
         })();
 
-        // ============ 概览屏：组合状态速览 + 今日重点信号 ============
+        // ============ 概览屏：新老用户动态千人千面渲染 + 策略热榜 ============
         (function () {
-            // 组合速览（精简版，点击去持仓/组合详情）
-            var combos = [
-                {name: 'Market Velocity', symbol: 'ASTER-USDT', mode: '自动交易', st: 'ok', stt: '运行中', pnl: '+80.6'},
-                {name: 'Vegas 趋势跟随', symbol: 'BTC-USDT', mode: '仅接收信号', st: 'warn', stt: '5天后到期', pnl: '—'}
-            ];
-            var cHost = document.getElementById('overviewCombos');
-            if (cHost) cHost.innerHTML = combos.map(function (c) {
-                var up = c.pnl.indexOf('+') === 0;
-                var full = c.symbol + ' · ' + c.name;
-                var ctx = JSON.stringify({name: full, running: c.mode === '自动交易'}).replace(/"/g, '&quot;');
-                return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '"><div class="flex" style="justify-content:space-between;">'
-                    + '<div><div style="font-weight:700;font-size:13.5px;">' + c.name + ' <span class="muted">×</span> ' + c.symbol + '</div>'
-                    + '<div class="tiny muted" style="margin-top:2px;">' + c.mode + '</div></div>'
-                    + '<div class="item__right"><span class="badge ' + (c.st === 'ok' ? 'badge--ok' : 'badge--warn') + '">' + c.stt + '</span>'
-                    + (c.pnl !== '—' ? '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="margin-top:4px;">' + c.pnl + '</div>' : '')
-                    + '</div></div></div>';
-            }).join('');
+            var currentPersona = 'pro'; // 'new' | 'pro'
+            var bannerClosed = false;
 
-            // 今日重点信号（精简，引导去发现屏）
+            // 1. 老用户在跑组合数据
+            var runningCombos = [
+                {name: 'Market Velocity', symbol: 'ASTER-USDT', mode: '自动交易', st: 'ok', stt: '运行中', pnl: '+80.6', pnlPct: '+6.9%'},
+                {name: 'Vegas 趋势跟随', symbol: 'BTC-USDT', mode: '仅接收信号', st: 'warn', stt: '5天后到期', pnl: '—', pnlPct: ''}
+            ];
+
+            // 2. 新用户热门策略推荐数据 (核心转化源)
+            var hotStrategies = [
+                {
+                    name: 'Market Velocity 全市场动量', type: 'ALL', scope: '全市场多币种扫描',
+                    roi: '+184.2%', win: '64%', sharpe: '2.14', dd: '8.4%', risk: '中',
+                    symbols: 'ASTER, SOL, DOGE 等', desc: '全自动追踪成交量突增与动量破位，自动挂硬止损防爆仓。'
+                },
+                {
+                    name: 'Vegas 趋势跟随', type: 'BTC', scope: 'BTC-USDT-SWAP 专属',
+                    roi: '+92.6%', win: '72%', sharpe: '2.45', dd: '4.8%', risk: '中低',
+                    symbols: 'BTC-USDT', desc: '经典双均线过滤震荡，顺大势做波段，盈亏比极佳。'
+                }
+            ];
+
+            var dynamicHost = document.getElementById('overviewDynamicSection');
+            var bannerEl = document.getElementById('newStrategyBanner');
+            var closeBannerBtn = document.getElementById('closeStrategyBanner');
+
+            function renderOverviewSection() {
+                if (!dynamicHost) return;
+
+                if (currentPersona === 'new') {
+                    // === 新用户视态：策略入口前置，突出战绩与一键认领 ===
+                    var strCards = hotStrategies.map(function (s) {
+                        var ctx = JSON.stringify({name: s.name, scope: s.scope, roi: s.roi, risk: s.risk}).replace(/"/g, '&quot;');
+                        return '<div class="strategy-featured-card" data-push="marketplace" data-ctx="' + ctx + '">'
+                            + '<div class="flex" style="justify-content:space-between;align-items:flex-start;">'
+                            + '<div>'
+                            + '<div style="font-weight:800;font-size:14.5px;">' + s.name + '</div>'
+                            + '<div class="tiny muted" style="margin-top:2px;">' + s.scope + ' · 风险 ' + s.risk + '</div>'
+                            + '</div>'
+                            + '<span class="badge badge--ok">热门精选</span>'
+                            + '</div>'
+                            + '<div class="kpi-grid" style="margin:12px 0 10px;gap:6px;">'
+                            + '<div class="kpi kpi--primary" style="padding:6px;"><div class="kpi__label">近 1 年收益率</div><div class="kpi__value num" style="font-size:16px;">' + s.roi + '</div></div>'
+                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">历史胜率</div><div class="kpi__value num" style="font-size:16px;">' + s.win + '</div></div>'
+                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">最大回撤</div><div class="kpi__value num" style="font-size:16px;">' + s.dd + '</div></div>'
+                            + '</div>'
+                            + '<div class="tiny" style="color:var(--text-secondary);line-height:1.5;margin-bottom:12px;">' + s.desc + '</div>'
+                            + '<div class="flex" style="gap:8px;">'
+                            + '<button class="btn btn--primary btn--sm grow" data-sheet="checkout" data-ctx=\'{"tier":"Pro","price":"$99.00"}\'>一键订阅此策略</button>'
+                            + '<button class="btn btn--ghost btn--sm" data-push="marketplace">查看回测</button>'
+                            + '</div>'
+                            + '</div>';
+                    }).join('');
+
+                    dynamicHost.innerHTML = '<div class="sec">'
+                        + '<div class="sec__head"><span class="sec__title">🔥 实盘策略精选</span><span class="sec__link" data-push="marketplace">浏览全部 (12) →</span></div>'
+                        + '<div class="stack">' + strCards + '</div>'
+                        + '</div>';
+
+                } else {
+                    // === 老用户视态：聚焦在跑组合状态、持仓盈亏与巡检 ===
+                    var comboCards = runningCombos.map(function (c) {
+                        var up = c.pnl.indexOf('+') === 0;
+                        var full = c.symbol + ' · ' + c.name;
+                        var ctx = JSON.stringify({name: full, running: c.mode === '自动交易'}).replace(/"/g, '&quot;');
+                        return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '"><div class="flex" style="justify-content:space-between;">'
+                            + '<div><div style="font-weight:700;font-size:13.5px;">' + c.name + ' <span class="muted">×</span> ' + c.symbol + '</div>'
+                            + '<div class="tiny muted" style="margin-top:2px;">' + c.mode + '</div></div>'
+                            + '<div class="item__right"><span class="badge ' + (c.st === 'ok' ? 'badge--ok' : 'badge--warn') + '">' + c.stt + '</span>'
+                            + (c.pnl !== '—' ? '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="margin-top:4px;">' + c.pnl + ' ' + c.pnlPct + '</div>' : '')
+                            + '</div></div></div>';
+                    }).join('');
+
+                    dynamicHost.innerHTML = '<div class="sec">'
+                        + '<div class="sec__head"><span class="sec__title">我的在跑组合</span><span class="sec__link" data-push="positions">查看持仓明细 →</span></div>'
+                        + '<div class="stack">' + comboCards + '</div>'
+                        + '</div>';
+                }
+            }
+
+            renderOverviewSection();
+
+            // 切换场景（新用户 vs 老用户体验）
+            var pBtns = document.querySelectorAll('#personaSwitchBar .persona-btn');
+            pBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    pBtns.forEach(function (b) {b.classList.remove('is-active');});
+                    this.classList.add('is-active');
+                    currentPersona = this.getAttribute('data-persona');
+                    renderOverviewSection();
+                    if (window.__toast) window.__toast(currentPersona === 'new' ? '已切换为：新用户视角（策略精选置顶）' : '已切换为：老用户视角（运行组合驾驶舱）', 'info');
+                });
+            });
+
+            // 关闭新策略广播条
+            if (closeBannerBtn) {
+                closeBannerBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    if (bannerEl) bannerEl.style.display = 'none';
+                    bannerClosed = true;
+                    if (window.__toast) window.__toast('已关闭新策略提醒', 'info');
+                });
+            }
+
+            // 今日重点信号渲染
             var signals = [
-                {symbol: 'PENGU-USDT', tone: '放量上涨', dir: 'up', hint: '等待价格与策略确认'},
-                {symbol: 'WIF-USDT', tone: '排名跃迁', dir: 'up', hint: '价格证据不足，先观察'}
+                {symbol: 'PENGU-USDT', tone: '放量突破', dir: 'up', hint: '策略已触发，等待回调确认'},
+                {symbol: 'WIF-USDT', tone: '异动拉升', dir: 'up', hint: '价格证据不足，先列入观察'}
             ];
             var sHost = document.getElementById('overviewSignals');
             if (sHost) sHost.innerHTML = signals.map(function (s) {
@@ -3800,50 +4032,61 @@
             }).join('');
         })();
 
-        // ============ 策略商城：策略卡（五指标 + 风险等级 + 适用币种，字段对齐 StrategyProductCard） ============
+        // ============ 策略商城：统一使用高质感精选策略卡片体系 ============
         (function () {
             var strategies = [
                 {
-                    name: 'Market Velocity 动量突破', cat: '动量突破', risk: '中', source: '精选表现',
-                    ret: '+142.8%', sharpe: '1.86', trades: '318', win: '54%', dd: '-12.4%',
-                    symbols: '全市场逐信号', tf: '15m / 1H'
+                    name: 'Market Velocity 全市场动量', cat: '动量突破', risk: '中', badge: '热门精选', badgeCls: 'badge--ok',
+                    scope: '全市场多币种扫描',
+                    ret: '+184.2%', sharpe: '2.14', trades: '318', win: '64%', dd: '8.4%',
+                    desc: '全自动追踪成交量突增与动量破位，自动挂硬止损防爆仓。',
+                    tf: '15m / 1H'
                 },
                 {
-                    name: 'Vegas 趋势跟随', cat: '趋势跟随', risk: '中低', source: '历史表现',
-                    ret: '+68.5%', sharpe: '2.12', trades: '96', win: '61%', dd: '-8.9%',
-                    symbols: 'BTC · ETH · SOL', tf: '4H / 1D'
+                    name: 'Vegas 趋势跟随', cat: '趋势跟随', risk: '中低', badge: '经典波段', badgeCls: 'badge--info',
+                    scope: 'BTC-USDT-SWAP 专属',
+                    ret: '+92.6%', sharpe: '2.45', trades: '96', win: '72%', dd: '4.8%',
+                    desc: '经典双均线过滤震荡，顺大势做波段，盈亏比极佳。',
+                    tf: '4H / 1D'
                 },
                 {
-                    name: '波动收敛反转', cat: '反转', risk: '高', source: '待更新',
-                    ret: '—', sharpe: '—', trades: '—', win: '—', dd: '—',
-                    symbols: 'BTC-USDT', tf: '1H'
+                    name: 'SOL 动量高频 v2.0', cat: '高频动量', risk: '中高', badge: '新策略', badgeCls: 'badge--warn',
+                    scope: 'SOL-USDT 专属高频',
+                    ret: '+136.5%', sharpe: '2.28', trades: '210', win: '69%', dd: '6.2%',
+                    desc: '捕捉日内微观订单簿失衡与流动性脉冲，极速挂单套利。',
+                    tf: '5m / 15m'
+                },
+                {
+                    name: '波动收敛反转', cat: '反转套利', risk: '高', badge: '高收益/高波动', badgeCls: 'badge--danger badge--square',
+                    scope: 'BTC-USDT 试验仓',
+                    ret: '+42.0%', sharpe: '1.65', trades: '45', win: '58%', dd: '11.2%',
+                    desc: '布林带极限突破后的均值回归，适合高波动震荡行情。',
+                    tf: '1H'
                 }
             ];
-            var riskTone = {'低': 'badge--ok', '中低': 'badge--ok', '中': 'badge--warn', '高': 'badge--danger badge--square'};
+
             var sHost = document.getElementById('strategyList');
             if (sHost) sHost.innerHTML = strategies.map(function (s) {
-                var pending = s.ret === '—';
-                var ctx = JSON.stringify({name: s.name}).replace(/"/g, '&quot;');
-                return '<article class="card card--tap" data-push="strategy-detail" data-ctx="' + ctx + '">'
-                    + '<div class="flex" style="justify-content:space-between;gap:8px;">'
-                    + '<span style="font-weight:800;font-size:14.5px;line-height:1.35;">' + s.name + '</span>'
-                    + '<span class="badge ' + (riskTone[s.risk] || 'badge--muted') + '">风险 ' + s.risk + '</span></div>'
-                    + '<div class="flex" style="gap:6px;margin-top:7px;flex-wrap:wrap;">'
-                    + '<span class="badge badge--muted">' + s.cat + '</span>'
-                    + '<span class="tiny muted">适用 ' + s.symbols + ' · ' + s.tf + '</span></div>'
-                    + (pending
-                        ? '<div class="tiny muted" style="margin-top:11px;padding:10px;border-radius:10px;background:var(--bg-subtle);">历史表现补齐后展示收益、夏普和资金曲线。</div>'
-                        : '<div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);margin-top:11px;gap:5px;">'
-                        + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">收益</div><div class="kpi__value num pnl-pos" style="font-size:12.5px;">' + s.ret + '</div></div>'
-                        + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">夏普</div><div class="kpi__value num" style="font-size:12.5px;">' + s.sharpe + '</div></div>'
-                        + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">样本</div><div class="kpi__value num" style="font-size:12.5px;">' + s.trades + '</div></div>'
-                        + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">胜率</div><div class="kpi__value num" style="font-size:12.5px;">' + s.win + '</div></div>'
-                        + '<div class="kpi" style="padding:8px 5px;"><div class="kpi__label">回撤</div><div class="kpi__value num pnl-neg" style="font-size:12.5px;">' + s.dd + '</div></div>'
-                        + '</div>')
-                    + '<div class="flex" style="justify-content:space-between;margin-top:10px;">'
-                    + '<span class="badge ' + (s.source === '精选表现' ? 'badge--info' : 'badge--muted') + '">' + s.source + '</span>'
-                    + '<span class="sec__link">查看订阅详情 →</span></div>'
-                    + '</article>';
+                var ctx = JSON.stringify({name: s.name, scope: s.scope, roi: s.ret, risk: s.risk}).replace(/"/g, '&quot;');
+                return '<div class="strategy-featured-card" data-push="marketplace" data-ctx="' + ctx + '">'
+                    + '<div class="flex" style="justify-content:space-between;align-items:flex-start;">'
+                    + '<div>'
+                    + '<div style="font-weight:800;font-size:15px;color:var(--text-primary);">' + s.name + '</div>'
+                    + '<div class="tiny muted" style="margin-top:2px;">' + s.scope + ' · 风险 ' + s.risk + ' · ' + s.tf + '</div>'
+                    + '</div>'
+                    + '<span class="badge ' + s.badgeCls + '">' + s.badge + '</span>'
+                    + '</div>'
+                    + '<div class="kpi-grid" style="margin:12px 0 10px;gap:6px;">'
+                    + '<div class="kpi kpi--primary" style="padding:6px;"><div class="kpi__label">近 1 年收益率</div><div class="kpi__value num" style="font-size:16px;">' + s.ret + '</div></div>'
+                    + '<div class="kpi" style="padding:6px;"><div class="kpi__label">历史胜率</div><div class="kpi__value num" style="font-size:16px;">' + s.win + '</div></div>'
+                    + '<div class="kpi" style="padding:6px;"><div class="kpi__label">最大回撤</div><div class="kpi__value num" style="font-size:16px;">' + s.dd + '</div></div>'
+                    + '</div>'
+                    + '<div class="tiny" style="color:var(--text-secondary);line-height:1.5;margin-bottom:12px;">' + s.desc + '</div>'
+                    + '<div class="flex" style="gap:8px;">'
+                    + '<button class="btn btn--primary btn--sm grow" data-sheet="checkout" data-ctx=\'{"tier":"Pro","price":"$99.00"}\'>一键订阅此策略</button>'
+                    + '<button class="btn btn--ghost btn--sm" data-push="marketplace" data-ctx="' + ctx + '">查看回测</button>'
+                    + '</div>'
+                    + '</div>';
             }).join('');
         })();
 
