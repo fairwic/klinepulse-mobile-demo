@@ -1373,6 +1373,46 @@
             min-width: 0;
         }
 
+        /* ============ 核心高价值指标与标签体系 ============ */
+        .hero-safety-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(99, 214, 154, 0.12);
+            border: 1px solid rgba(99, 214, 154, 0.28);
+            border-radius: 999px;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--status-success);
+        }
+
+        .strat-meta-tag {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 10.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .mkt-quant-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            background: rgba(232, 180, 92, 0.12);
+            border: 1px solid rgba(232, 180, 92, 0.3);
+            border-radius: 4px;
+            padding: 1px 5px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--accent-strong);
+            margin-left: 4px;
+        }
+
         /* ============ 智能待办与健康状态折叠条 ============ */
         .todos-status-card {
             background: var(--bg-surface);
@@ -1878,31 +1918,37 @@
             <!-- ========== 自动化交易屏（单一币种只读监控台） ========== -->
             <!-- ========== 概览屏（首页驾驶舱：我的钱怎么样 + 有没有事要处理） ========== -->
             <section class="screen is-active" data-screen="overview">
-                <!-- 资产 + 今日盈亏大数字（首屏焦点） -->
+                <!-- 资产 + 今日盈亏大数字 + 核心风控水位与止损守护 -->
                 <div class="card card--focus">
-                    <div class="flex" style="justify-content:space-between;">
-                        <span class="tiny muted">全部资产估值 · USDT</span>
-                        <span class="tiny muted num">更新于 14:22</span>
+                    <div class="flex" style="justify-content:space-between;align-items:center;">
+                        <span class="tiny muted">实盘总资产估值 · USDT (OKX)</span>
+                        <span class="hero-safety-pill">
+                            <svg class="svg-ic" style="width:12px;height:12px;">
+                                <use href="#i-shield" />
+                            </svg>
+                            100% 止损守护
+                        </span>
                     </div>
                     <div class="num" style="font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-top:6px;">
                         12,847.30</div>
                     <div class="flex" style="gap:14px;margin-top:6px;">
                         <span class="num pnl-pos" style="font-size:14px;font-weight:700;">+318.60 今日</span>
                         <span class="num pnl-pos tiny" style="align-self:center;">▲ 2.54%</span>
-                        <span class="num muted tiny" style="align-self:center;">累计 +18.7%</span>
+                        <span class="num muted tiny" style="align-self:center;">累计胜率 68%</span>
                     </div>
-                    <div class="kpi-grid" style="margin-top:14px;">
+                    <div class="kpi-grid" style="margin-top:14px;grid-template-columns:repeat(3,1fr);gap:6px;">
                         <div class="kpi">
                             <div class="kpi__label">在跑组合</div>
-                            <div class="kpi__value num">2</div>
+                            <div class="kpi__value num">2 <span class="tiny muted">/ 10</span></div>
                         </div>
                         <div class="kpi">
-                            <div class="kpi__label">持仓名义</div>
-                            <div class="kpi__value num" style="font-size:14px;">3,120</div>
+                            <div class="kpi__label">保证金占用率</div>
+                            <div class="kpi__value num" style="color:var(--status-success);font-size:14px;">24.3% <span
+                                    class="tiny" style="color:var(--text-muted);font-weight:normal;">安全</span></div>
                         </div>
                         <div class="kpi">
                             <div class="kpi__label">未实现盈亏</div>
-                            <div class="kpi__value num pnl-pos" style="font-size:14px;">+96.4</div>
+                            <div class="kpi__value num pnl-pos" style="font-size:14px;">+96.40</div>
                         </div>
                     </div>
                 </div>
@@ -2058,15 +2104,15 @@
 
             <!-- ========== 发现屏（信号 / 情报 / 策略 三合一） ========== -->
             <section class="screen" data-screen="discover">
-                <!-- 分段切换 -->
+                <!-- 发现屏核心三合一分段：策略商城(默认高光) / 实时信号 / 市场情报 -->
                 <div class="seg" id="discoverSeg">
-                    <button class="seg__btn is-active" data-seg="signals">信号</button>
-                    <button class="seg__btn" data-seg="intel">情报</button>
-                    <button class="seg__btn" data-seg="strategies">策略</button>
+                    <button class="seg__btn is-active" data-seg="strategies">策略商城</button>
+                    <button class="seg__btn" data-seg="signals">实时信号</button>
+                    <button class="seg__btn" data-seg="intel">快讯情报</button>
                 </div>
 
                 <!-- 信号分段（雷达候选，默认） -->
-                <div class="seg-panel is-active" data-panel="signals">
+                <div class="seg-panel" data-panel="signals">
                     <div class="flex" style="justify-content:space-between;padding:12px 2px 4px;">
                         <span class="tiny muted">候选按成交活跃度、波动排序</span>
                         <span class="badge badge--muted badge--square">信号待确认</span>
@@ -2137,7 +2183,7 @@
                 </div>
 
                 <!-- 策略分段（策略商城） -->
-                <div class="seg-panel" data-panel="strategies">
+                <div class="seg-panel is-active" data-panel="strategies">
                     <div class="card flex" style="padding:0 14px;gap:10px;margin-top:12px;">
                         <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);">
                             <use href="#i-search" />
@@ -2317,7 +2363,7 @@
         // ============ 多屏切换：底部标签栏驱动，同步顶栏标题 ============
         (function () {
             var titles = {
-                overview: '概览', markets: '行情', copytrade: '跟单', discover: '发现', user: '我的'
+                overview: '概览', markets: '行情', copytrade: '跟单', discover: '策略与发现', user: '我的'
             };
             var tabbar = document.getElementById('tabbar');
             var screens = document.querySelectorAll('.screen');
@@ -3862,22 +3908,32 @@
             var currentPersona = 'pro'; // 'new' | 'pro'
             var bannerClosed = false;
 
-            // 1. 老用户在跑组合数据
+            // 1. 老用户在跑组合数据（包含交易员最关心的：杠杆、开仓价、止损点位、运行天数）
             var runningCombos = [
-                {name: 'Market Velocity', symbol: 'ASTER-USDT', mode: '自动交易', st: 'ok', stt: '运行中', pnl: '+80.6', pnlPct: '+6.9%'},
-                {name: 'Vegas 趋势跟随', symbol: 'BTC-USDT', mode: '仅接收信号', st: 'warn', stt: '5天后到期', pnl: '—', pnlPct: ''}
+                {
+                    name: 'Market Velocity', symbol: 'ASTER-USDT', mode: '自动交易', lev: '3X 多',
+                    st: 'ok', stt: '运行中', entry: '1.7420', mark: '1.8624', stopAt: '1.6800 (-3.5%)',
+                    pnl: '+80.60', pnlPct: '+6.9%', days: '18天'
+                },
+                {
+                    name: 'Vegas 趋势跟随', symbol: 'BTC-USDT', mode: '信号守护', lev: '1X 多',
+                    st: 'warn', stt: '5天后到期', entry: '76,200', mark: '77,412', stopAt: '74,800 (-1.8%)',
+                    pnl: '+15.80', pnlPct: '+1.0%', days: '32天'
+                }
             ];
 
-            // 2. 新用户热门策略推荐数据 (核心转化源)
+            // 2. 新用户热门策略推荐数据（包含用户最关心的：持仓周期、交易频率、盈亏比、最大回撤）
             var hotStrategies = [
                 {
                     name: 'Market Velocity 全市场动量', type: 'ALL', scope: '全市场多币种扫描',
-                    roi: '+184.2%', win: '64%', sharpe: '2.14', dd: '8.4%', risk: '中',
-                    symbols: 'ASTER, SOL, DOGE 等', desc: '全自动追踪成交量突增与动量破位，自动挂硬止损防爆仓。'
+                    roi: '+184.2%', win: '64%', sharpe: '2.14', dd: '8.4%', profitFactor: '2.35',
+                    holdTime: '平均持仓 4.2小时 (日内波段)', freq: '约 1.8 次/天', risk: '中',
+                    symbols: 'ASTER, SOL, DOGE 等', desc: '全自动追踪成交量突增与动量破位，每单自动挂硬止损防爆仓。'
                 },
                 {
                     name: 'Vegas 趋势跟随', type: 'BTC', scope: 'BTC-USDT-SWAP 专属',
-                    roi: '+92.6%', win: '72%', sharpe: '2.45', dd: '4.8%', risk: '中低',
+                    roi: '+92.6%', win: '72%', sharpe: '2.45', dd: '4.8%', profitFactor: '2.80',
+                    holdTime: '平均持仓 2.5天 (大周期趋势)', freq: '约 2~3 次/周', risk: '中低',
                     symbols: 'BTC-USDT', desc: '经典双均线过滤震荡，顺大势做波段，盈亏比极佳。'
                 }
             ];
@@ -3890,21 +3946,26 @@
                 if (!dynamicHost) return;
 
                 if (currentPersona === 'new') {
-                    // === 新用户视态：策略入口前置，突出战绩与一键认领 ===
+                    // === 新用户视态：突出战绩指标、平均持仓周期与交易频次 ===
                     var strCards = hotStrategies.map(function (s) {
                         var ctx = JSON.stringify({name: s.name, scope: s.scope, roi: s.roi, risk: s.risk}).replace(/"/g, '&quot;');
                         return '<div class="strategy-featured-card" data-push="marketplace" data-ctx="' + ctx + '">'
                             + '<div class="flex" style="justify-content:space-between;align-items:flex-start;">'
                             + '<div>'
-                            + '<div style="font-weight:800;font-size:14.5px;">' + s.name + '</div>'
+                            + '<div style="font-weight:800;font-size:15px;">' + s.name + '</div>'
                             + '<div class="tiny muted" style="margin-top:2px;">' + s.scope + ' · 风险 ' + s.risk + '</div>'
                             + '</div>'
-                            + '<span class="badge badge--ok">热门精选</span>'
+                            + '<span class="badge badge--ok">实盘精选</span>'
                             + '</div>'
-                            + '<div class="kpi-grid" style="margin:12px 0 10px;gap:6px;">'
-                            + '<div class="kpi kpi--primary" style="padding:6px;"><div class="kpi__label">近 1 年收益率</div><div class="kpi__value num" style="font-size:16px;">' + s.roi + '</div></div>'
-                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">历史胜率</div><div class="kpi__value num" style="font-size:16px;">' + s.win + '</div></div>'
-                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">最大回撤</div><div class="kpi__value num" style="font-size:16px;">' + s.dd + '</div></div>'
+                            + '<div class="kpi-grid" style="margin:12px 0 10px;grid-template-columns:repeat(4,1fr);gap:5px;">'
+                            + '<div class="kpi kpi--primary" style="padding:6px;"><div class="kpi__label">近 1 年收益</div><div class="kpi__value num" style="font-size:15px;">' + s.roi + '</div></div>'
+                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">胜率</div><div class="kpi__value num" style="font-size:15px;">' + s.win + '</div></div>'
+                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">盈亏比</div><div class="kpi__value num" style="font-size:15px;">' + s.profitFactor + '</div></div>'
+                            + '<div class="kpi" style="padding:6px;"><div class="kpi__label">最大回撤</div><div class="kpi__value num" style="font-size:15px;">' + s.dd + '</div></div>'
+                            + '</div>'
+                            + '<div class="flex" style="gap:6px;margin-bottom:10px;flex-wrap:wrap;">'
+                            + '<span class="strat-meta-tag">⏱ ' + s.holdTime + '</span>'
+                            + '<span class="strat-meta-tag">⚡ ' + s.freq + '</span>'
                             + '</div>'
                             + '<div class="tiny" style="color:var(--text-secondary);line-height:1.5;margin-bottom:12px;">' + s.desc + '</div>'
                             + '<div class="flex" style="gap:8px;">'
@@ -3920,21 +3981,30 @@
                         + '</div>';
 
                 } else {
-                    // === 老用户视态：聚焦在跑组合状态、持仓盈亏与巡检 ===
+                    // === 老用户视态：展示杠杆、止损点位、盈亏与运行天数 ===
                     var comboCards = runningCombos.map(function (c) {
                         var up = c.pnl.indexOf('+') === 0;
                         var full = c.symbol + ' · ' + c.name;
                         var ctx = JSON.stringify({name: full, running: c.mode === '自动交易'}).replace(/"/g, '&quot;');
-                        return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '"><div class="flex" style="justify-content:space-between;">'
-                            + '<div><div style="font-weight:700;font-size:13.5px;">' + c.name + ' <span class="muted">×</span> ' + c.symbol + '</div>'
-                            + '<div class="tiny muted" style="margin-top:2px;">' + c.mode + '</div></div>'
+                        return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '">'
+                            + '<div class="flex" style="justify-content:space-between;">'
+                            + '<div>'
+                            + '<div style="font-weight:700;font-size:14px;">' + c.name + ' <span class="muted">×</span> ' + c.symbol + '</div>'
+                            + '<div class="tiny muted" style="margin-top:2px;">' + c.lev + ' · ' + c.mode + ' · 运行 ' + c.days + '</div>'
+                            + '</div>'
                             + '<div class="item__right"><span class="badge ' + (c.st === 'ok' ? 'badge--ok' : 'badge--warn') + '">' + c.stt + '</span>'
-                            + (c.pnl !== '—' ? '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="margin-top:4px;">' + c.pnl + ' ' + c.pnlPct + '</div>' : '')
-                            + '</div></div></div>';
+                            + '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="margin-top:4px;font-weight:800;font-size:13px;">' + c.pnl + ' (' + c.pnlPct + ')</div>'
+                            + '</div>'
+                            + '</div>'
+                            + '<div class="rows" style="margin-top:10px;padding-top:8px;border-top:1px solid var(--border-subtle);">'
+                            + '<div class="row"><span class="row__k">开仓 / 现价</span><span class="row__v num">' + c.entry + ' → ' + c.mark + '</span></div>'
+                            + '<div class="row"><span class="row__k">硬止损守护</span><span class="row__v num" style="color:var(--status-success);font-weight:700;">已挂 ' + c.stopAt + '</span></div>'
+                            + '</div>'
+                            + '</div>';
                     }).join('');
 
                     dynamicHost.innerHTML = '<div class="sec">'
-                        + '<div class="sec__head"><span class="sec__title">我的在跑组合</span><span class="sec__link" data-push="positions">查看持仓明细 →</span></div>'
+                        + '<div class="sec__head"><span class="sec__title">我的在跑组合</span><span class="sec__link" data-push="positions">查看全部持仓 →</span></div>'
                         + '<div class="stack">' + comboCards + '</div>'
                         + '</div>';
                 }
@@ -3963,7 +4033,6 @@
                     if (window.__toast) window.__toast('已关闭新策略提醒', 'info');
                 });
             }
-
             // 今日重点信号渲染
             var signals = [
                 {symbol: 'PENGU-USDT', tone: '放量突破', dir: 'up', hint: '策略已触发，等待回调确认'},
@@ -4140,16 +4209,16 @@
 
         // ============ 探索/行情：币种列表 + 一级分段切换（绿涨红跌，与全站一致） ============
         (function () {
-            // 占位行情样本，字段对齐 OKX 行情页：符号/项目名/成交额/最新价/USD估值/涨跌%
+            // 占位行情样本：增加真实量化信号标签（特色价值，区别于普通行情）
             var coins = [
-                {sym: 'LAUSDT', name: 'Lagrange', vol: '1,317.69万', last: '0.06304', usd: '0.063003', chg: 9.53, c: '#3a7bd5'},
-                {sym: 'ZKPUSDT', name: 'zkPass', vol: '297.72万', last: '0.04538', usd: '0.045354', chg: 4.36, c: '#111'},
-                {sym: 'JELLYUSDT', name: 'jelly-my-jelly', vol: '30.11万', last: '0.055', usd: '0.054968', chg: 3.89, c: '#8a5cf6'},
-                {sym: 'MINIMAXUSDT', name: 'MiniMax Group', vol: '1,621.67万', last: '44.2', usd: '44.1744', chg: 3.39, c: '#e8455f'},
-                {sym: 'BOMEUSDT', name: 'BOOK OF MEME', vol: '394.5万', last: '0.0008887', usd: '0.00088818', chg: 3.38, c: '#4c8a3f'},
-                {sym: 'BTCUSDT', name: 'Bitcoin', vol: '68.02亿', last: '77,412.5', usd: '77,367.60', chg: 0.01, c: '#f7931a'},
-                {sym: 'ETHUSDT', name: 'Ethereum', vol: '71.21亿', last: '2,411.78', usd: '2,410.38', chg: -0.23, c: '#627eea'},
-                {sym: 'DOGEUSDT', name: 'Dogecoin', vol: '2.09亿', last: '0.08123', usd: '0.081183', chg: -0.50, c: '#c3a634'}
+                {sym: 'LAUSDT', name: 'Lagrange', signal: '🔥 动量突破', vol: '1,317.69万', last: '0.06304', usd: '0.063003', chg: 9.53, c: '#3a7bd5'},
+                {sym: 'ZKPUSDT', name: 'zkPass', signal: 'Vegas 支撑', vol: '297.72万', last: '0.04538', usd: '0.045354', chg: 4.36, c: '#111'},
+                {sym: 'JELLYUSDT', name: 'jelly-my-jelly', signal: '放量蓄势', vol: '30.11万', last: '0.055', usd: '0.054968', chg: 3.89, c: '#8a5cf6'},
+                {sym: 'MINIMAXUSDT', name: 'MiniMax Group', signal: '破位预警', vol: '1,621.67万', last: '44.2', usd: '44.1744', chg: 3.39, c: '#e8455f'},
+                {sym: 'BTCUSDT', name: 'Bitcoin', signal: '4H 趋势顺势', vol: '68.02亿', last: '77,412.5', usd: '77,367.60', chg: 0.01, c: '#f7931a'},
+                {sym: 'ETHUSDT', name: 'Ethereum', signal: '均线缠绕', vol: '71.21亿', last: '2,411.78', usd: '2,410.38', chg: -0.23, c: '#627eea'},
+                {sym: 'SOLUSDT', name: 'Solana', signal: '🔥 15m 脉冲', vol: '18.40亿', last: '170.05', usd: '170.05', chg: 1.05, c: '#8a5cf6'},
+                {sym: 'DOGEUSDT', name: 'Dogecoin', signal: '观望', vol: '2.09亿', last: '0.08123', usd: '0.081183', chg: -0.50, c: '#c3a634'}
             ];
             function initial(sym) {return sym.replace('USDT', '').slice(0, 2);}
             var host = document.getElementById('marketList');
@@ -4157,18 +4226,18 @@
                 var up = k.chg >= 0;
                 var chgTxt = (up ? '+' : '') + k.chg.toFixed(2) + '%';
                 var ctx = JSON.stringify({sym: k.sym.replace('USDT', '-USDT')}).replace(/"/g, '&quot;');
+                var sigHtml = k.signal ? '<span class="mkt-quant-tag">' + k.signal + '</span>' : '';
                 return '<div class="mkt-row" data-push="coin-detail" data-ctx="' + ctx + '">'
                     + '<div class="mkt-row__name">'
                     + '<span class="mkt-coin" style="background:' + k.c + ';">' + initial(k.sym) + '</span>'
                     + '<div class="mkt-coin-meta">'
-                    + '<div class="mkt-coin-sym">' + k.sym + '<span class="mkt-tag-perp">永续</span></div>'
+                    + '<div class="mkt-coin-sym">' + k.sym + '<span class="mkt-tag-perp">永续</span>' + sigHtml + '</div>'
                     + '<div class="mkt-coin-sub">' + k.name + ' · $' + k.vol + '</div>'
                     + '</div></div>'
                     + '<div class="mkt-price"><div class="mkt-price__last num">' + k.last + '</div><div class="mkt-price__usd num">$' + k.usd + '</div></div>'
                     + '<div class="mkt-chg ' + (up ? 'mkt-chg--up' : 'mkt-chg--down') + ' num">' + chgTxt + '</div>'
                     + '</div>';
             }).join('');
-
             // 一级分段切换（自选/现货/合约/总览，演示高亮）
             var mktTabs = document.getElementById('mktTabs');
             if (mktTabs) mktTabs.addEventListener('click', function (e) {
@@ -4181,16 +4250,13 @@
         // ============ 跟单屏渲染：支持搜索、多维度排序与快速过滤 ============
         (function () {
             var allTraders = [
-                {id: 'okx:1', name: 'Alpha_Momentum', ex: 'OKX', coins: 'BTC, ETH, SOL', roi: 142.5, aum: 482000, aumStr: '48.2万', followers: 1204, cap: 1500, win: 64, days: 218},
-                {id: 'okx:2', name: 'SteadyGrid_ETH', ex: 'OKX', coins: 'ETH, ARB', roi: 68.2, aum: 210000, aumStr: '21.0万', followers: 842, cap: 1000, win: 76, days: 156},
-                {id: 'okx:3', name: 'Breakout_Quant', ex: 'OKX', coins: 'SOL, DOGE, PEPE', roi: 215.8, aum: 890000, aumStr: '89.0万', followers: 2338, cap: 2500, win: 52, days: 340},
-                {id: 'okx:4', name: 'Trend_Master', ex: 'OKX', coins: 'BTC, LTC', roi: 45.3, aum: 125000, aumStr: '12.5万', followers: 500, cap: 500, win: 58, days: 88},
-                {id: 'okx:5', name: 'Macro_Arbitrage', ex: 'OKX', coins: 'BTC, ETH', roi: -4.2, aum: 68000, aumStr: '6.8万', followers: 120, cap: 800, win: 44, days: 45},
-                {id: 'okx:6', name: 'SOL_HighFreq', ex: 'OKX', coins: 'SOL, JUP, RAY', roi: 88.9, aum: 340000, aumStr: '34.0万', followers: 1100, cap: 1200, win: 69, days: 202},
-                {id: 'binance:1', name: 'Binance_Whale_Hunter', ex: 'Binance', coins: 'BTC, BNB', roi: 178.4, aum: 1200000, aumStr: '120.0万', followers: 3000, cap: 3000, win: 62, days: 410},
-                {id: 'bitget:1', name: 'Bitget_Copy_Pro', ex: 'Bitget', coins: 'ETH, XRP', roi: 93.6, aum: 156000, aumStr: '15.6万', followers: 450, cap: 800, win: 71, days: 195}
+                {id: 'okx:1', name: 'Alpha_Momentum', ex: 'OKX', coins: 'BTC, SOL', roi: 142.5, maxDd: '5.2%', aum: 482000, aumStr: '48.2万', followerProfit: '+$6.8万', followers: 1204, cap: 1500, win: 64, days: 218},
+                {id: 'okx:2', name: 'SteadyGrid_ETH', ex: 'OKX', coins: 'ETH, ARB', roi: 68.2, maxDd: '3.1%', aum: 210000, aumStr: '21.0万', followerProfit: '+$2.4万', followers: 842, cap: 1000, win: 76, days: 156},
+                {id: 'okx:3', name: 'Breakout_Quant', ex: 'OKX', coins: 'SOL, DOGE', roi: 215.8, maxDd: '9.4%', aum: 890000, aumStr: '89.0万', followerProfit: '+$14.2万', followers: 2338, cap: 2500, win: 52, days: 340},
+                {id: 'okx:4', name: 'Trend_Master', ex: 'OKX', coins: 'BTC, LTC', roi: 45.3, maxDd: '4.0%', aum: 125000, aumStr: '12.5万', followerProfit: '+$1.8万', followers: 500, cap: 500, win: 58, days: 88},
+                {id: 'okx:5', name: 'Macro_Arbitrage', ex: 'OKX', coins: 'BTC, ETH', roi: -4.2, maxDd: '6.5%', aum: 68000, aumStr: '6.8万', followerProfit: '-$800', followers: 120, cap: 800, win: 44, days: 45},
+                {id: 'okx:6', name: 'SOL_HighFreq', ex: 'OKX', coins: 'SOL, JUP', roi: 88.9, maxDd: '4.8%', aum: 340000, aumStr: '34.0万', followerProfit: '+$4.9万', followers: 1100, cap: 1200, win: 69, days: 202}
             ];
-
             var host = document.getElementById('copyTraderList');
             var searchInput = document.getElementById('copySearchInput');
             var clearSearchBtn = document.getElementById('copyClearSearch');
@@ -4358,4 +4424,31 @@
     </script>
 </body>
 
-</html>
+</html>return '<div class="trader-card" data-push="trader" data-ctx="' + tctx + '">'
+    + '<div>'
+        + '<div class="trader-card__head">'
+            + '<div class="trader-card__avatar">' + t.name.slice(0, 1) + '</div>'
+            + '<div style="min-width:0;flex:1;">'
+                + '<div class="trader-card__name" title="' + t.name + '">' + t.name + '</div>'
+                + '<div class="tiny muted">' + t.ex + ' · ' + t.days + '天</div>'
+                + '</div>'
+            + '</div>'
+        + '<div style="margin:6px 0 2px;">'
+            + '<div class="tiny muted">90D 收益率</div>'
+            + '<div class="trader-card__roi num ' + (isPos ? 'pnl-pos' : 'pnl-neg') + '">' + roiText + '</div>'
+            + '</div>'
+        + '<div class="tiny muted" style="font-size:10.5px;margin-bottom:6px;">主做: <b
+                style="color:var(--text-secondary);">' + t.coins + '</b></div>'
+        + '</div>'
+    + '<div style="border-top:1px solid var(--border-subtle);padding-top:6px;margin-top:4px;">'
+        + '<div class="trader-card__meta-row"><span>胜率 / 回撤</span><span class="num"
+                style="font-weight:600;color:var(--text-primary);">' + t.win + '% <span class="muted tiny">/ ' + t.maxDd
+                    + '</span></span></div>'
+        + '<div class="trader-card__meta-row"><span>跟随总收益</span><span
+                class="num ' + (t.followerProfit.indexOf('+') === 0 ? 'pnl-pos' : '') + '">' + t.followerProfit +
+                '</span></div>'
+        + '<div class="trader-card__meta-row"><span>跟随人数</span><span class="num">' + (isFull ? '<span
+                    style="color:var(--status-danger);font-weight:700;">满员</span>' : t.followers.toLocaleString() + '人')
+                + '</span></div>'
+        + '</div>'
+    + '</div>';
