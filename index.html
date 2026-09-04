@@ -1494,7 +1494,63 @@
             white-space: nowrap;
         }
 
-                /* ============ 极简呼吸感驾驶舱重构样式 ============ */
+                        /* ============ 行情、发现、用户中心全局降噪与节奏感样式 ============ */
+        .mkt-clean-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 14px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-subtle);
+            margin-bottom: 4px;
+        }
+        .user-nav-group {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .user-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 14px;
+            border-bottom: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: background 140ms ease;
+        }
+        .user-nav-item:last-child {
+            border-bottom: 0;
+        }
+        .user-nav-item:active {
+            background: var(--bg-subtle);
+        }
+        .user-nav-item-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .news-clean-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            transition: all 140ms ease;
+            cursor: pointer;
+        }
+        .news-clean-card:active {
+            transform: scale(0.99);
+            border-color: var(--border-strong);
+        }
+
+/* ============ 极简呼吸感驾驶舱重构样式 ============ */
         .combo-row-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
@@ -2281,229 +2337,161 @@
 
             <!-- ========== 发现屏（信号 / 情报 / 策略 三合一） ========== -->
             <section class="screen" data-screen="discover">
-                <!-- 发现屏核心三合一分段：策略商城(默认高光) / 实时信号 / 市场情报 -->
-                <div class="seg" id="discoverSeg">
+                <!-- 顶层一级三合一分段：策略商城 (默认) / 实时信号 / 市场情报 -->
+                <div class="seg" id="discoverSeg" style="margin-bottom:12px;">
                     <button class="seg__btn is-active" data-seg="strategies">策略商城</button>
                     <button class="seg__btn" data-seg="signals">实时信号</button>
                     <button class="seg__btn" data-seg="intel">快讯情报</button>
                 </div>
 
-                <!-- 信号分段（雷达候选，默认） -->
-                <div class="seg-panel" data-panel="signals">
-                    <div class="flex" style="justify-content:space-between;padding:12px 2px 4px;">
-                        <span class="tiny muted">候选按成交活跃度、波动排序</span>
-                        <span class="badge badge--muted badge--square">信号待确认</span>
-                    </div>
-                    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
-                        <div class="kpi">
-                            <div class="kpi__label">异动</div>
-                            <div class="kpi__value num">18</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">进 Top50</div>
-                            <div class="kpi__value num" style="color:var(--status-success);">5</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">最大跃迁</div>
-                            <div class="kpi__value num">+37</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">链路</div>
-                            <div class="kpi__value num" style="font-size:13px;">3·2·1</div>
-                        </div>
-                    </div>
-                    <div class="sec">
-                        <div class="sec__head"><span class="sec__title">待验证信号</span><span class="sec__hint">只作观察</span>
-                        </div>
-                        <div id="radarCandidates" class="stack"></div>
-                    </div>
-                    <div class="sec">
-                        <div class="sec__head"><span class="sec__title">排名异动榜</span><span class="sec__link"
-                                data-toast="异动榜已刷新" data-toast-kind="info">刷新</span></div>
-                        <div class="card">
-                            <div class="rows" id="radarRows"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 情报分段（新闻） -->
-                <div class="seg-panel" data-panel="intel">
-                    <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);margin-top:12px;">
-                        <div class="kpi">
-                            <div class="kpi__label">最新</div>
-                            <div class="kpi__value num">42</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">高影响</div>
-                            <div class="kpi__value num" style="color:var(--status-warning);">7</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">需检查</div>
-                            <div class="kpi__value num" style="color:var(--accent-strong);">12</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">可信度</div>
-                            <div class="kpi__value num">78%</div>
-                        </div>
-                    </div>
-                    <div class="chips" style="margin-top:12px;">
-                        <button class="chip is-active">全部</button>
-                        <button class="chip">交易所公告</button>
-                        <button class="chip">监管·宏观</button>
-                        <button class="chip">安全事件</button>
-                    </div>
-                    <div class="sec">
-                        <div class="sec__head"><span class="sec__title">今日重点</span><span class="sec__hint">按情报热度</span>
-                        </div>
-                        <div id="newsList" class="stack"></div>
-                    </div>
-                </div>
-
-                <!-- 策略分段（策略商城） -->
+                <!-- 1. 策略分段（策略商城 - 默认高亮） -->
                 <div class="seg-panel is-active" data-panel="strategies">
-                    <div class="card flex" style="padding:0 14px;gap:10px;margin-top:12px;">
-                        <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);">
-                            <use href="#i-search" />
-                        </svg>
-                        <input type="search" placeholder="搜索策略名称、交易对、周期、风险"
-                            style="flex:1;height:46px;padding:0;background:transparent;border:0;color:var(--text-primary);font:inherit;outline:none;" />
-                    </div>
-                    <div class="chips" style="margin-top:12px;">
-                        <button class="chip is-active">全部</button>
-                        <button class="chip">动量突破</button>
+                    <div class="chips" style="margin-bottom:12px;">
+                        <button class="chip is-active">全部策略 (12)</button>
+                        <button class="chip">全市场动量</button>
                         <button class="chip">趋势跟随</button>
-                        <button class="chip">全市场</button>
+                        <button class="chip">高频突破</button>
+                        <button class="chip">低回撤</button>
+                    </div>
+                    <div id="strategyList" class="stack" style="gap:10px;"></div>
+                </div>
+
+                <!-- 2. 信号分段（动量与突破实时雷达） -->
+                <div class="seg-panel" data-panel="signals">
+                    <div class="chips" style="margin-bottom:10px;">
+                        <button class="chip is-active">全部异动 (18)</button>
+                        <button class="chip">突破做多</button>
+                        <button class="chip">放量蓄势</button>
+                        <button class="chip">破位预警</button>
                     </div>
                     <div class="sec">
-                        <div class="sec__head"><span class="sec__title">可订阅策略</span><span class="sec__hint">订阅按“策略 ×
-                                币种”计算</span></div>
-                        <div id="strategyList" class="stack"></div>
+                        <div class="sec__head">
+                            <span class="sec__title">动量异动榜单</span>
+                            <span class="sec__hint">实时量价追踪</span>
+                        </div>
+                        <div id="radarList" class="card" style="padding:4px 14px;"><div class="rows" id="radarRows"></div></div>
                     </div>
+                </div>
+
+                <!-- 3. 情报分段（精选高价值市场资讯，去噪纯粹） -->
+                <div class="seg-panel" data-panel="intel">
+                    <div class="chips" style="margin-bottom:12px;">
+                        <button class="chip is-active">全部情报</button>
+                        <button class="chip">交易所公告</button>
+                        <button class="chip">监管·ETF</button>
+                        <button class="chip">大额异动</button>
+                    </div>
+                    <div id="newsList" class="stack" style="gap:8px;"></div>
                 </div>
             </section>
-            <!-- ========== 旧新闻雷达屏（已并入发现） ========== -->
+
             <!-- ========== 用户中心屏（我的：会员/准备度/组合订阅/二级入口） ========== -->
             <section class="screen" data-screen="user">
-                <!-- 账户 Hero：会员等级 + 组合权限概览 -->
-                <div class="card card--focus card--tap" data-push="login"
-                    style="background:linear-gradient(160deg,var(--bg-elevated),var(--bg-surface));">
-                    <div class="flex" style="justify-content:space-between;">
-                        <div class="flex">
-                            <div class="item__ico"
-                                style="border-radius:50%;background:linear-gradient(140deg,#f2c879,#d19a3f);color:#1a1206;border:0;">
-                                Z</div>
+                <!-- 1. 账户核心信息 Hero 卡片 -->
+                <div class="card card--focus card--tap" data-push="login" style="margin-bottom:12px;">
+                    <div class="flex" style="justify-content:space-between;align-items:center;">
+                        <div class="flex" style="gap:11px;">
+                            <div class="item__ico" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(140deg,#f2c879,#d19a3f);color:#1a1206;font-size:16px;font-weight:800;border:0;">Z</div>
                             <div>
-                                <div style="font-weight:800;font-size:15px;">交易员 · zhao</div>
-                                <span class="badge badge--info" style="margin-top:3px;">Pro 会员</span>
+                                <div style="font-weight:800;font-size:15.5px;color:var(--text-primary);">交易员 · zhao</div>
+                                <div class="flex" style="gap:6px;margin-top:3px;">
+                                    <span class="badge badge--ok">Pro 会员有效</span>
+                                    <span class="tiny muted num">UID: 829410</span>
+                                </div>
                             </div>
                         </div>
-                        <span class="tiny sec__link">切换账号 / 登录 →</span>
+                        <span class="tiny sec__link">账号切换 →</span>
                     </div>
-                    <div class="kpi-grid" style="margin-top:14px;">
-                        <div class="kpi kpi--primary">
-                            <div class="kpi__label">已使用组合</div>
-                            <div class="kpi__value num">3<span class="tiny muted"> / 10</span></div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">有效组合</div>
-                            <div class="kpi__value num" style="color:var(--status-success);">2</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">即将到期</div>
-                            <div class="kpi__value num" style="color:var(--status-warning);">1</div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- 账户准备情况路径条：4 步 -->
-                <div class="sec">
-                    <div class="sec__head"><span class="sec__title">账户准备情况</span><span
-                            class="sec__hint">先看会员和连接，再操作</span></div>
-                    <div class="card">
-                        <div class="rows">
-                            <div class="row"><span class="row__k">① 会员权益</span><span class="badge badge--ok">已生效</span>
-                            </div>
-                            <div class="row"><span class="row__k">② 自动交易账户</span><span class="badge badge--warn">1
-                                    个待检查</span></div>
-                            <div class="row"><span class="row__k">③ 待处理问题</span><span
-                                    class="badge badge--danger badge--square">2 项</span></div>
-                            <div class="row"><span class="row__k">④ 安全下一步</span><span class="badge badge--info">去连接
-                                    OKX</span></div>
+                    <div class="kpi-grid" style="margin-top:14px;grid-template-columns:repeat(3,1fr);gap:6px;">
+                        <div class="kpi kpi--primary" style="padding:8px 6px;">
+                            <div class="kpi__label">组合配额</div>
+                            <div class="kpi__value num" style="font-size:15px;">3 <span class="tiny muted">/ 10</span></div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 4 张统计卡 -->
-                <div class="sec">
-                    <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr);">
-                        <div class="kpi">
-                            <div class="kpi__label">会员到期</div>
+                        <div class="kpi" style="padding:8px 6px;">
+                            <div class="kpi__label">运行中组合</div>
+                            <div class="kpi__value num" style="color:var(--status-success);font-size:15px;">2 个</div>
+                        </div>
+                        <div class="kpi" style="padding:8px 6px;">
+                            <div class="kpi__label">会员有效期</div>
                             <div class="kpi__value num" style="font-size:15px;">32 天</div>
-                            <div class="kpi__sub">Pro · 到期后转信号</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">通知状态</div>
-                            <div class="kpi__value" style="font-size:15px;">短信 + 邮件</div>
-                            <div class="kpi__sub">已配置</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">交易平台连接</div>
-                            <div class="kpi__value num" style="font-size:15px;color:var(--status-warning);">1 / 3</div>
-                            <div class="kpi__sub">1 个待检查</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">本周动作</div>
-                            <div class="kpi__value num" style="font-size:15px;">3</div>
-                            <div class="kpi__sub">1 待续订 · 2 待连接</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 当前有效组合（策略×币种） -->
+                <!-- 2. 实盘账户连接与准备度门禁 (合并为 1 张高信任度卡片) -->
                 <div class="sec">
-                    <div class="sec__head"><span class="sec__title">我的订阅组合</span><span class="sec__link"
-                            data-push="positions">查看全部</span></div>
-                    <div id="userCombos" class="stack"></div>
-                </div>
-
-                <!-- 二级入口（桌面用户中心 7 分区） -->
-                <div class="sec">
-                    <div class="sec__head"><span class="sec__title">账户与设置</span></div>
-                    <div class="card" style="padding:4px 14px;">
+                    <div class="sec__head"><span class="sec__title">实盘账户准备度</span><span class="sec__hint">4 项门禁</span></div>
+                    <div class="card" style="padding:10px 14px;margin-bottom:12px;">
                         <div class="rows">
-                            <button class="row nav-row" data-push="membership-plans"><span class="nav-row__k"><svg
-                                        class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-card" />
-                                    </svg>会员权益</span><span class="tiny sec__link">Pro · 管理 →</span></button>
-                            <button class="row nav-row" data-push="api-connect"><span class="nav-row__k"><svg
-                                        class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-link" />
-                                    </svg>交易平台连接</span><span class="badge badge--warn">1 / 3</span></button>
-                            <button class="row nav-row" data-push="orders"><span class="nav-row__k"><svg
-                                        class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-receipt" />
-                                    </svg>我的订单</span><span class="tiny muted">1 待处理</span></button>
-                            <button class="row nav-row" data-push="notify"><span class="nav-row__k"><svg
-                                        class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-bell" />
-                                    </svg>通知设置</span><span class="badge badge--ok">短信+邮件</span></button>
-                            <button class="row nav-row" data-push="copy"><span class="nav-row__k"><svg
-                                        class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-users" />
-                                    </svg>跟单观察</span><span class="tiny muted">仅供观察 →</span></button>
-                            <button class="row nav-row" data-push="ai-review"><span class="nav-row__k"><svg
-                                        class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-brain" />
-                                    </svg>AI 复盘</span><span class="tiny muted">仅提供分析 →</span></button>
-                            <button class="row nav-row" data-push="profile" style="border-bottom:0;"><span
-                                    class="nav-row__k"><svg class="svg-ic svg-ic--sm nav-ic">
-                                        <use href="#i-gear" />
-                                    </svg>用户信息</span><span class="tiny sec__link">→</span></button>
+                            <div class="row">
+                                <span class="row__k flex" style="gap:6px;">① 会员订阅配额</span>
+                                <span class="badge badge--ok">已就绪 (剩余 7)</span>
+                            </div>
+                            <div class="row">
+                                <span class="row__k flex" style="gap:6px;">② OKX 实盘 API 授权</span>
+                                <span class="badge badge--ok">正常连接</span>
+                            </div>
+                            <div class="row">
+                                <span class="row__k flex" style="gap:6px;">③ 全局硬止损风控守护</span>
+                                <span class="badge badge--ok">100% 启用</span>
+                            </div>
+                            <div class="row">
+                                <span class="row__k flex" style="gap:6px;">④ 币安只读观察账户</span>
+                                <span class="badge badge--warn badge--square" data-push="api-connect" style="cursor:pointer;">需更新密钥 →</span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <button class="btn btn--ghost btn--block" style="margin-top:12px;" data-sheet="logout">退出登录</button>
+                <!-- 3. 我的订阅组合管理 -->
+                <div class="sec">
+                    <div class="sec__head">
+                        <span class="sec__title">我的策略订阅</span>
+                        <span class="sec__link" data-push="positions">持仓明细 →</span>
+                    </div>
+                    <div id="userCombos" class="stack" style="gap:6px;margin-bottom:14px;"></div>
+                </div>
+
+                <!-- 4. 账户设置与系统功能列表 (iOS 分组风格，清爽规整) -->
+                <div class="sec">
+                    <div class="sec__head"><span class="sec__title">账户安全与通用设置</span></div>
+                    <div class="user-nav-group">
+                        <div class="user-nav-item" data-push="notification-center">
+                            <div class="user-nav-item-left">
+                                <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-bell"/></svg>
+                                <span>通知推送渠道 (短信 / 邮件 / 微信)</span>
+                            </div>
+                            <span class="tiny muted flex">已配置 ▾</span>
+                        </div>
+                        <div class="user-nav-item" data-push="api-connect">
+                            <div class="user-nav-item-left">
+                                <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-card"/></svg>
+                                <span>交易所 API 授权管理 (OKX / 币安)</span>
+                            </div>
+                            <span class="tiny muted flex">2 平台 ▾</span>
+                        </div>
+                        <div class="user-nav-item" data-push="devices">
+                            <div class="user-nav-item-left">
+                                <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-shield"/></svg>
+                                <span>登录设备与安全会话</span>
+                            </div>
+                            <span class="tiny muted flex">当前设备 ▾</span>
+                        </div>
+                        <div class="user-nav-item" data-push="login" data-ctx='{"mode":"forgot"}'>
+                            <div class="user-nav-item-left">
+                                <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-lock"/></svg>
+                                <span>修改主控密码与 2FA</span>
+                            </div>
+                            <span class="tiny muted flex">已开启 2FA ▾</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 退出登录按钮 -->
+                <button class="btn btn--ghost btn--block" style="margin:16px 0 24px;color:var(--status-danger);border-color:rgba(240,100,91,0.25);" data-sheet="logout">
+                    退出登录
+                </button>
             </section>
         </main>
 
