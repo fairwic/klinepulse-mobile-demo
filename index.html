@@ -138,7 +138,7 @@
             gap: 10px;
             height: var(--topbar-h);
             padding: 0 14px;
-            background: rgba(5, 7, 10, 0.92);
+            background: var(--bg-page);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-subtle);
         }
@@ -262,7 +262,7 @@
             padding-bottom: var(--safe-bottom);
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            background: rgba(18, 18, 18, 0.97);
+            background: var(--bg-surface);
             backdrop-filter: blur(14px);
             border-top: 1px solid var(--border-subtle);
         }
@@ -906,7 +906,7 @@
             gap: 10px;
             height: var(--topbar-h);
             padding: 0 12px;
-            background: rgba(6, 6, 6, 0.92);
+            background: var(--bg-page);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-subtle);
         }
@@ -1373,36 +1373,113 @@
             min-width: 0;
         }
 
+        /* ============ 2列交易员卡片网格 ============ */
+        .trader-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .trader-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 140ms ease;
+            cursor: pointer;
+        }
+
+        .trader-card:active {
+            transform: scale(0.98);
+            border-color: var(--border-strong);
+        }
+
+        .trader-card__head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .trader-card__avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-subtle);
+            color: var(--accent-strong);
+            font-weight: 800;
+            font-size: 13px;
+            display: grid;
+            place-items: center;
+            flex: 0 0 auto;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .trader-card__name {
+            font-weight: 700;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-primary);
+        }
+
+        .trader-card__roi {
+            font-size: 18px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin: 4px 0 2px;
+        }
+
+        .trader-card__meta-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
         /* ============ 生产级移动端登录与表单控件 ============ */
         .auth-container {
             padding: 8px 4px 24px;
         }
+
         .auth-header {
             margin: 12px 0 28px;
         }
+
         .auth-header__title {
             font-size: 24px;
             font-weight: 800;
             color: var(--text-primary);
             letter-spacing: -0.5px;
         }
+
         .auth-header__desc {
             font-size: 13px;
             color: var(--text-muted);
             margin-top: 6px;
         }
-        .auth-header__desc a, .auth-header__desc span {
+
+        .auth-header__desc a,
+        .auth-header__desc span {
             color: var(--accent);
             font-weight: 600;
             cursor: pointer;
             text-decoration: none;
         }
+
         .auth-tabs {
             display: flex;
             border-bottom: 1px solid var(--border-subtle);
             margin-bottom: 24px;
             gap: 24px;
         }
+
         .auth-tab {
             position: relative;
             background: none;
@@ -1414,9 +1491,11 @@
             cursor: pointer;
             transition: color 180ms ease;
         }
+
         .auth-tab.is-active {
             color: var(--text-primary);
         }
+
         .auth-tab.is-active::after {
             content: '';
             position: absolute;
@@ -1427,9 +1506,11 @@
             background: var(--accent);
             border-radius: 2px;
         }
+
         .auth-field {
             margin-bottom: 18px;
         }
+
         .auth-label {
             display: flex;
             justify-content: space-between;
@@ -1439,6 +1520,7 @@
             color: var(--text-secondary);
             margin-bottom: 8px;
         }
+
         .auth-input-box {
             position: relative;
             display: flex;
@@ -1450,10 +1532,12 @@
             padding: 0 14px;
             transition: border-color 160ms ease, box-shadow 160ms ease;
         }
+
         .auth-input-box:focus-within {
             border-color: var(--accent);
             box-shadow: 0 0 0 1px var(--accent-dim);
         }
+
         .auth-input {
             flex: 1;
             height: 100%;
@@ -1464,10 +1548,12 @@
             font-size: 14.5px;
             color: var(--text-primary);
         }
+
         .auth-input::placeholder {
             color: var(--text-muted);
             font-size: 13.5px;
         }
+
         .auth-action-btn {
             background: none;
             border: 0;
@@ -1478,10 +1564,12 @@
             padding: 4px 6px;
             white-space: nowrap;
         }
+
         .auth-action-btn:disabled {
             color: var(--text-muted);
             cursor: not-allowed;
         }
+
         .auth-divider {
             display: flex;
             align-items: center;
@@ -1490,12 +1578,15 @@
             color: var(--text-muted);
             font-size: 11.5px;
         }
-        .auth-divider::before, .auth-divider::after {
+
+        .auth-divider::before,
+        .auth-divider::after {
             content: '';
             flex: 1;
             height: 1px;
             background: var(--border-subtle);
         }
+
         .auth-quick-card {
             display: flex;
             align-items: center;
@@ -1508,6 +1599,7 @@
             transition: all 140ms ease;
             margin-bottom: 8px;
         }
+
         .auth-quick-card:active {
             transform: scale(0.99);
             border-color: var(--border-strong);
@@ -1743,7 +1835,7 @@
                 <!-- 组合状态速览 -->
                 <div class="sec">
                     <div class="sec__head"><span class="sec__title">我的组合</span><span class="sec__link"
-                            data-goto="positions">查看持仓 →</span></div>
+                            data-push="positions">查看持仓 →</span></div>
                     <div id="overviewCombos" class="stack"></div>
                 </div>
 
@@ -1823,51 +1915,46 @@
                 <div id="marketList"></div>
             </section>
 
-            <!-- ========== 持仓屏（我的钱具体在哪、有没有裸单） ========== -->
-            <section class="screen" data-screen="positions">
-                <!-- 敞口汇总 -->
-                <div class="card card--focus">
-                    <div class="flex" style="justify-content:space-between;">
-                        <span class="tiny muted">当前总敞口 · 名义 USDT</span>
-                        <span class="badge badge--muted badge--square">仅查看</span>
-                    </div>
-                    <div class="num" style="font-size:26px;font-weight:800;margin-top:5px;">3,120.00</div>
-                    <div class="kpi-grid" style="margin-top:12px;">
-                        <div class="kpi kpi--primary">
-                            <div class="kpi__label">未实现盈亏</div>
-                            <div class="kpi__value num" style="font-size:15px;">+96.40</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">持仓数</div>
-                            <div class="kpi__value num" style="font-size:15px;">2</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi__label">已挂止损</div>
-                            <div class="kpi__value num" style="font-size:15px;color:var(--status-success);">2 / 2</div>
-                        </div>
-                    </div>
+            <!-- ========== 跟单屏（交易员公开表现与多维度筛选） ========== -->
+            <section class="screen" data-screen="copytrade">
+                <!-- 搜索栏：按交易员名称、交易币种搜索 -->
+                <div class="card flex"
+                    style="padding:0 12px;gap:8px;height:42px;margin-bottom:10px;background:var(--bg-surface);border:1px solid var(--border-subtle);align-items:center;">
+                    <svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);flex:0 0 auto;">
+                        <use href="#i-search" />
+                    </svg>
+                    <input id="copySearchInput" type="search" placeholder="搜索交易员名称、平台、币种..."
+                        style="flex:1;height:100%;background:transparent;border:0;outline:none;font:inherit;font-size:13.5px;color:var(--text-primary);padding:0;" />
+                    <button type="button" id="copyClearSearch"
+                        style="display:none;background:none;border:0;padding:4px;color:var(--text-muted);font-size:14px;cursor:pointer;line-height:1;">✕</button>
                 </div>
 
-                <!-- 分平台切换 -->
-                <div class="chips" style="margin-top:12px;">
-                    <button class="chip is-active">全部平台</button>
-                    <button class="chip">OKX</button>
-                    <button class="chip">币安</button>
+                <!-- 平台与条件快捷筛选栏 -->
+                <div class="chips" id="copyPlatformChips">
+                    <button class="chip is-active" data-ex="all">全部平台</button>
+                    <button class="chip" data-ex="okx">OKX</button>
+                    <button class="chip" data-ex="binance">Binance</button>
+                    <button class="chip" data-ex="bitget">Bitget</button>
                 </div>
 
-                <!-- 真实仓位（每个仓位含止损保护状态） -->
-                <div class="sec">
-                    <div class="sec__head"><span class="sec__title">当前持仓</span><span class="sec__hint">按组合归属</span>
-                    </div>
-                    <div id="positionList" class="stack"></div>
+                <!-- 快捷维度筛选与排序方式 -->
+                <div class="chips" id="copyFilterChips" style="margin-top:8px;">
+                    <button class="chip is-active" data-sort="roi">收益率最高 ▾</button>
+                    <button class="chip" data-sort="win">胜率最高</button>
+                    <button class="chip" data-sort="aum">管理规模最大</button>
+                    <button class="chip" data-filter="capacity">仅看有名额</button>
+                    <button class="chip" data-filter="experienced">带单 &gt;180天</button>
                 </div>
 
-                <!-- 平台账户就绪 -->
-                <div class="sec">
-                    <div class="sec__head"><span class="sec__title">平台账户</span><span class="sec__hint">各平台独立检查下单</span>
-                    </div>
-                    <div id="platformAccounts" class="stack"></div>
+                <!-- 统计与结果数量 -->
+                <div class="flex"
+                    style="justify-content:space-between;margin:12px 2px 4px;font-size:11.5px;color:var(--text-muted);">
+                    <span id="copyResultCount">共找到 6 位交易员</span>
+                    <span class="tiny sec__link" id="resetCopyFilters" style="cursor:pointer;display:none;">重置筛选</span>
                 </div>
+
+                <!-- 2 列网格容器 -->
+                <div id="copyTraderList" class="trader-grid" style="margin-top:4px;"></div>
             </section>
 
             <!-- ========== 发现屏（信号 / 情报 / 策略 三合一） ========== -->
@@ -2053,7 +2140,7 @@
                 <!-- 当前有效组合（策略×币种） -->
                 <div class="sec">
                     <div class="sec__head"><span class="sec__title">我的订阅组合</span><span class="sec__link"
-                            data-goto="positions">查看全部</span></div>
+                            data-push="positions">查看全部</span></div>
                     <div id="userCombos" class="stack"></div>
                 </div>
 
@@ -2106,9 +2193,9 @@
             <button class="tab" data-target="markets"><svg class="tab__icon">
                     <use href="#i-candle" />
                 </svg>探索</button>
-            <button class="tab" data-target="positions"><svg class="tab__icon">
-                    <use href="#i-wallet" />
-                </svg>持仓</button>
+            <button class="tab" data-target="copytrade"><svg class="tab__icon">
+                    <use href="#i-users" />
+                </svg>跟单</button>
             <button class="tab" data-target="discover"><svg class="tab__icon">
                     <use href="#i-compass" />
                 </svg>发现</button>
@@ -2131,7 +2218,7 @@
         // ============ 多屏切换：底部标签栏驱动，同步顶栏标题 ============
         (function () {
             var titles = {
-                overview: '概览', markets: '行情', positions: '持仓', discover: '发现', user: '我的'
+                overview: '概览', markets: '行情', copytrade: '跟单', discover: '发现', user: '我的'
             };
             var tabbar = document.getElementById('tabbar');
             var screens = document.querySelectorAll('.screen');
@@ -2865,6 +2952,66 @@
                 };
             });
 
+            // ---- 二级页面：我的持仓（从底部主菜单移入二级子页面） ----
+            PUSH.register('positions', function () {
+                var positions = [
+                    {
+                        symbol: 'ASTER-USDT', ex: 'OKX', combo: 'Market Velocity', dir: 'long',
+                        qty: '1,680', entry: '1.7420', mark: '1.8624', pnl: '+80.6', pnlPct: '+6.9%', stop: true, stopAt: '1.6800'
+                    },
+                    {
+                        symbol: 'SOL-USDT', ex: 'OKX', combo: 'Vegas 趋势跟随', dir: 'long',
+                        qty: '9.2', entry: '168.30', mark: '170.05', pnl: '+15.8', pnlPct: '+1.0%', stop: true, stopAt: '160.00'
+                    }
+                ];
+                var dir = {long: {c: 'dir-long', t: '多', pre: '↑'}, short: {c: 'dir-short', t: '空', pre: '↓'}};
+                var posCards = positions.map(function (p) {
+                    var d = dir[p.dir], up = p.pnl.indexOf('+') === 0;
+                    var ctx = JSON.stringify({name: p.symbol + ' · ' + p.combo, running: true}).replace(/"/g, '&quot;');
+                    return '<div class="card card--tap" data-push="combo-detail" data-ctx="' + ctx + '">'
+                        + '<div class="flex" style="justify-content:space-between;">'
+                        + '<div><div style="font-weight:800;font-size:14.5px;">' + p.symbol
+                        + ' <span class="badge badge--muted" style="margin-left:4px;"><span class="' + d.c + '">' + d.pre + ' ' + d.t + '</span></span></div>'
+                        + '<div class="tiny muted" style="margin-top:3px;">' + p.ex + ' · ' + p.combo + '</div></div>'
+                        + '<div class="item__right"><div class="num ' + (up ? 'pnl-pos' : 'pnl-neg') + '" style="font-weight:800;font-size:15px;">' + p.pnl + '</div>'
+                        + '<div class="tiny num ' + (up ? 'pnl-pos' : 'pnl-neg') + '">' + p.pnlPct + '</div></div></div>'
+                        + '<div class="rows" style="margin-top:10px;">'
+                        + '<div class="row"><span class="row__k">数量 / 开仓价</span><span class="row__v num">' + p.qty + ' @ ' + p.entry + '</span></div>'
+                        + '<div class="row"><span class="row__k">标记价</span><span class="row__v num">' + p.mark + '</span></div>'
+                        + '<div class="row"><span class="row__k">止损保护</span><span class="row__v">'
+                        + (p.stop ? '<span class="badge badge--ok">已挂 ' + p.stopAt + '</span>' : '<span class="badge badge--danger badge--square">未挂止损</span>')
+                        + '</span></div></div></div>';
+                }).join('');
+
+                return {
+                    title: '当前持仓',
+                    body:
+                        '<div class="card card--focus" style="margin-bottom:12px;">'
+                        + '<div class="flex" style="justify-content:space-between;">'
+                        + '<span class="tiny muted">当前总敞口 · 名义 USDT</span>'
+                        + '<span class="badge badge--muted badge--square">仅查看</span>'
+                        + '</div>'
+                        + '<div class="num" style="font-size:26px;font-weight:800;margin-top:5px;">3,120.00</div>'
+                        + '<div class="kpi-grid" style="margin-top:12px;">'
+                        + '<div class="kpi kpi--primary"><div class="kpi__label">未实现盈亏</div><div class="kpi__value num" style="font-size:15px;">+96.40</div></div>'
+                        + '<div class="kpi"><div class="kpi__label">持仓数</div><div class="kpi__value num" style="font-size:15px;">2</div></div>'
+                        + '<div class="kpi"><div class="kpi__label">已挂止损</div><div class="kpi__value num" style="font-size:15px;color:var(--status-success);">2 / 2</div></div>'
+                        + '</div></div>'
+                        + '<div class="chips" style="margin-bottom:12px;"><button class="chip is-active">全部平台</button><button class="chip">OKX</button><button class="chip">币安</button></div>'
+                        + '<div class="sec">'
+                        + '<div class="sec__head"><span class="sec__title">持仓明细</span><span class="sec__hint">已挂止损保护</span></div>'
+                        + '<div class="stack">' + posCards + '</div>'
+                        + '</div>'
+                        + '<div class="sec" style="margin-top:14px;">'
+                        + '<div class="sec__head"><span class="sec__title">平台账户连接状态</span></div>'
+                        + '<div class="card" style="padding:10px 14px;">'
+                        + '<div class="rows">'
+                        + '<div class="row"><span class="row__k">OKX 实盘账户</span><span class="badge badge--ok">正常</span></div>'
+                        + '<div class="row"><span class="row__k">Binance 只读账户</span><span class="badge badge--warn">需更新密钥</span></div>'
+                        + '</div></div></div>'
+                };
+            });
+
             // ---- 用户信息：资料 + 安全 ----
             PUSH.register('profile', function () {
                 return {
@@ -3184,7 +3331,7 @@
                             if (currentMode === 'login') titleEl.textContent = '登录';
                             else if (currentMode === 'register') titleEl.textContent = '注册';
                             else if (currentMode === 'forgot') titleEl.textContent = '找回密码';
-                            
+
                             bodyEl.innerHTML = getBody(currentMode, loginType);
                             bindEvents();
                         }
@@ -3192,18 +3339,18 @@
                         function bindEvents() {
                             // 切换到注册
                             var gotoReg = el.querySelector('#gotoRegister');
-                            if (gotoReg) gotoReg.addEventListener('click', function () { currentMode = 'register'; reRender(); });
+                            if (gotoReg) gotoReg.addEventListener('click', function () {currentMode = 'register'; reRender();});
 
                             // 切换到登录
                             var gotoLog = el.querySelector('#gotoLogin');
-                            if (gotoLog) gotoLog.addEventListener('click', function () { currentMode = 'login'; reRender(); });
+                            if (gotoLog) gotoLog.addEventListener('click', function () {currentMode = 'login'; reRender();});
 
                             // 切换到找回密码
                             var gotoFor = el.querySelector('#gotoForgot');
-                            if (gotoFor) gotoFor.addEventListener('click', function () { currentMode = 'forgot'; reRender(); });
+                            if (gotoFor) gotoFor.addEventListener('click', function () {currentMode = 'forgot'; reRender();});
 
                             var backToLog = el.querySelector('#backToLoginLink');
-                            if (backToLog) backToLog.addEventListener('click', function () { currentMode = 'login'; reRender(); });
+                            if (backToLog) backToLog.addEventListener('click', function () {currentMode = 'login'; reRender();});
 
                             // 登录 Tab 切换（密码 vs 验证码）
                             el.querySelectorAll('.auth-tab').forEach(function (tab) {
@@ -3788,6 +3935,183 @@
                 b.classList.add('is-active');
             });
         })();
+        // ============ 跟单屏渲染：支持搜索、多维度排序与快速过滤 ============
+        (function () {
+            var allTraders = [
+                {id: 'okx:1', name: 'Alpha_Momentum', ex: 'OKX', coins: 'BTC, ETH, SOL', roi: 142.5, aum: 482000, aumStr: '48.2万', followers: 1204, cap: 1500, win: 64, days: 218},
+                {id: 'okx:2', name: 'SteadyGrid_ETH', ex: 'OKX', coins: 'ETH, ARB', roi: 68.2, aum: 210000, aumStr: '21.0万', followers: 842, cap: 1000, win: 76, days: 156},
+                {id: 'okx:3', name: 'Breakout_Quant', ex: 'OKX', coins: 'SOL, DOGE, PEPE', roi: 215.8, aum: 890000, aumStr: '89.0万', followers: 2338, cap: 2500, win: 52, days: 340},
+                {id: 'okx:4', name: 'Trend_Master', ex: 'OKX', coins: 'BTC, LTC', roi: 45.3, aum: 125000, aumStr: '12.5万', followers: 500, cap: 500, win: 58, days: 88},
+                {id: 'okx:5', name: 'Macro_Arbitrage', ex: 'OKX', coins: 'BTC, ETH', roi: -4.2, aum: 68000, aumStr: '6.8万', followers: 120, cap: 800, win: 44, days: 45},
+                {id: 'okx:6', name: 'SOL_HighFreq', ex: 'OKX', coins: 'SOL, JUP, RAY', roi: 88.9, aum: 340000, aumStr: '34.0万', followers: 1100, cap: 1200, win: 69, days: 202},
+                {id: 'binance:1', name: 'Binance_Whale_Hunter', ex: 'Binance', coins: 'BTC, BNB', roi: 178.4, aum: 1200000, aumStr: '120.0万', followers: 3000, cap: 3000, win: 62, days: 410},
+                {id: 'bitget:1', name: 'Bitget_Copy_Pro', ex: 'Bitget', coins: 'ETH, XRP', roi: 93.6, aum: 156000, aumStr: '15.6万', followers: 450, cap: 800, win: 71, days: 195}
+            ];
+
+            var host = document.getElementById('copyTraderList');
+            var searchInput = document.getElementById('copySearchInput');
+            var clearSearchBtn = document.getElementById('copyClearSearch');
+            var countLabel = document.getElementById('copyResultCount');
+            var resetBtn = document.getElementById('resetCopyFilters');
+
+            var currentEx = 'all';
+            var currentSort = 'roi'; // 'roi' | 'win' | 'aum'
+            var currentFilter = 'all'; // 'all' | 'capacity' | 'experienced'
+            var searchQuery = '';
+
+            function render() {
+                if (!host) return;
+
+                // 1. 过滤
+                var filtered = allTraders.filter(function (t) {
+                    if (currentEx !== 'all' && t.ex.toLowerCase() !== currentEx.toLowerCase()) return false;
+
+                    if (searchQuery) {
+                        var q = searchQuery.toLowerCase();
+                        var matchName = t.name.toLowerCase().indexOf(q) >= 0;
+                        var matchEx = t.ex.toLowerCase().indexOf(q) >= 0;
+                        var matchCoins = t.coins.toLowerCase().indexOf(q) >= 0;
+                        if (!matchName && !matchEx && !matchCoins) return false;
+                    }
+
+                    if (currentFilter === 'capacity') {
+                        if (t.followers >= t.cap) return false;
+                    }
+                    if (currentFilter === 'experienced') {
+                        if (t.days < 180) return false;
+                    }
+
+                    return true;
+                });
+
+                // 2. 排序
+                filtered.sort(function (a, b) {
+                    if (currentSort === 'roi') return b.roi - a.roi;
+                    if (currentSort === 'win') return b.win - a.win;
+                    if (currentSort === 'aum') return b.aum - a.aum;
+                    return 0;
+                });
+
+                // 更新计数与重置按钮状态
+                if (countLabel) countLabel.textContent = '共找到 ' + filtered.length + ' 位交易员';
+                var isFiltered = currentEx !== 'all' || currentFilter !== 'all' || currentSort !== 'roi' || searchQuery !== '';
+                if (resetBtn) resetBtn.style.display = isFiltered ? 'inline' : 'none';
+                if (clearSearchBtn) clearSearchBtn.style.display = searchQuery ? 'block' : 'none';
+
+                if (filtered.length === 0) {
+                    host.innerHTML = '<div class="empty" style="grid-column: span 2;padding:28px 0;">'
+                        + '<div class="empty__ic">🔍</div>'
+                        + '<div class="empty__title">无匹配的交易员</div>'
+                        + '<div class="empty__desc">未找到关键词 "' + searchQuery + '" 或当前筛选条件过严</div>'
+                        + '</div>';
+                    return;
+                }
+
+                host.innerHTML = filtered.map(function (t) {
+                    var isFull = t.followers >= t.cap;
+                    var isPos = t.roi >= 0;
+                    var roiText = (isPos ? '+' : '') + t.roi.toFixed(1) + '%';
+                    var tctx = JSON.stringify({name: t.name, roi: roiText, win: t.win + '%', aum: '$' + t.aumStr, days: t.days}).replace(/"/g, '&quot;');
+
+                    return '<div class="trader-card" data-push="trader" data-ctx="' + tctx + '">'
+                        + '<div>'
+                        + '<div class="trader-card__head">'
+                        + '<div class="trader-card__avatar">' + t.name.slice(0, 1) + '</div>'
+                        + '<div style="min-width:0;flex:1;">'
+                        + '<div class="trader-card__name" title="' + t.name + '">' + t.name + '</div>'
+                        + '<div class="tiny muted">' + t.ex + ' · ' + t.days + '天</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div style="margin:8px 0 4px;">'
+                        + '<div class="tiny muted">90D 收益率</div>'
+                        + '<div class="trader-card__roi num ' + (isPos ? 'pnl-pos' : 'pnl-neg') + '">' + roiText + '</div>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div style="border-top:1px solid var(--border-subtle);padding-top:6px;margin-top:6px;">'
+                        + '<div class="trader-card__meta-row"><span>胜率</span><span class="num" style="font-weight:600;color:var(--text-primary);">' + t.win + '%</span></div>'
+                        + '<div class="trader-card__meta-row"><span>规模</span><span class="num">$' + t.aumStr + '</span></div>'
+                        + '<div class="trader-card__meta-row"><span>跟随</span><span class="num">' + (isFull ? '<span style="color:var(--status-danger);font-weight:700;">满员</span>' : t.followers.toLocaleString() + '人') + '</span></div>'
+                        + '</div>'
+                        + '</div>';
+                }).join('');
+            }
+
+            render();
+
+            // 搜索输入防抖联动
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    searchQuery = this.value.trim();
+                    render();
+                });
+            }
+
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', function () {
+                    if (searchInput) searchInput.value = '';
+                    searchQuery = '';
+                    render();
+                });
+            }
+
+            // 平台切换
+            var exChips = document.querySelectorAll('#copyPlatformChips .chip');
+            exChips.forEach(function (c) {
+                c.addEventListener('click', function () {
+                    exChips.forEach(function (x) {x.classList.remove('is-active');});
+                    this.classList.add('is-active');
+                    currentEx = this.getAttribute('data-ex') || 'all';
+                    render();
+                });
+            });
+
+            // 排序与过滤切换
+            var fChips = document.querySelectorAll('#copyFilterChips .chip');
+            fChips.forEach(function (c) {
+                c.addEventListener('click', function () {
+                    var s = this.getAttribute('data-sort');
+                    var f = this.getAttribute('data-filter');
+
+                    if (s) {
+                        // 排序单选
+                        fChips.forEach(function (x) {if (x.getAttribute('data-sort')) x.classList.remove('is-active');});
+                        this.classList.add('is-active');
+                        currentSort = s;
+                    } else if (f) {
+                        // 过滤开关切换
+                        if (currentFilter === f) {
+                            currentFilter = 'all';
+                            this.classList.remove('is-active');
+                        } else {
+                            fChips.forEach(function (x) {if (x.getAttribute('data-filter')) x.classList.remove('is-active');});
+                            this.classList.add('is-active');
+                            currentFilter = f;
+                        }
+                    }
+                    render();
+                });
+            });
+
+            // 重置全部筛选
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    currentEx = 'all';
+                    currentSort = 'roi';
+                    currentFilter = 'all';
+                    searchQuery = '';
+                    if (searchInput) searchInput.value = '';
+
+                    exChips.forEach(function (c) {c.classList.toggle('is-active', c.getAttribute('data-ex') === 'all');});
+                    fChips.forEach(function (c) {
+                        if (c.getAttribute('data-sort')) c.classList.toggle('is-active', c.getAttribute('data-sort') === 'roi');
+                        if (c.getAttribute('data-filter')) c.classList.remove('is-active');
+                    });
+
+                    render();
+                });
+            }
+        })();
+
     </script>
 </body>
 
