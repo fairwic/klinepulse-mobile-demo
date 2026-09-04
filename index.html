@@ -1373,7 +1373,55 @@
             min-width: 0;
         }
 
-                /* ============ 收益微曲线与微型迷你标签 ============ */
+                        /* ============ 今日重点信号卡片专属高光样式 ============ */
+        .signal-pulse-card {
+            background: linear-gradient(165deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+            border: 1px solid var(--border-subtle);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+            transition: all 160ms ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .signal-pulse-card:active {
+            transform: scale(0.99);
+            border-color: var(--border-strong);
+        }
+        .signal-pulse-card.is-bullish {
+            border-left: 3.5px solid var(--status-success);
+        }
+        .signal-pulse-card.is-bearish {
+            border-left: 3.5px solid var(--status-danger);
+        }
+        .signal-trigger-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(232, 180, 92, 0.12);
+            border: 1px solid rgba(232, 180, 92, 0.3);
+            border-radius: 6px;
+            padding: 2px 7px;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-strong);
+        }
+        .signal-confidence-bar {
+            height: 4px;
+            border-radius: 999px;
+            background: var(--bg-subtle);
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .signal-confidence-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: var(--status-success);
+        }
+
+/* ============ 收益微曲线与微型迷你标签 ============ */
         .trader-sparkline-wrap {
             height: 32px;
             margin: 6px 0 4px;
@@ -3428,18 +3476,44 @@
                     if (window.__toast) window.__toast('已关闭新策略提醒', 'info');
                 });
             }
-            // 今日重点信号渲染
+            // 今日重点信号渲染：升级为高价值、带置信度与触发点位的主力信号卡片
             var signals = [
-                {symbol: 'PENGU-USDT', tone: '放量突破', dir: 'up', hint: '策略已触发，等待回调确认'},
-                {symbol: 'WIF-USDT', tone: '异动拉升', dir: 'up', hint: '价格证据不足，先列入观察'}
+                {
+                    symbol: 'PENGU-USDT', dir: 'up', type: '放量动量突破', conf: '92%',
+                    strategy: 'Market Velocity', triggerPrice: '0.0384', targetPrice: '0.0450 (+17%)', stopAt: '0.0365 (-5%)',
+                    volSpike: '24h 成交额暴增 +280%', time: '14:28 (15m 前)'
+                },
+                {
+                    symbol: 'WIF-USDT', dir: 'up', type: 'Vegas 4H 回踩企稳', conf: '86%',
+                    strategy: 'Vegas 趋势跟随', triggerPrice: '3.420', targetPrice: '3.980 (+16%)', stopAt: '3.250 (-5%)',
+                    volSpike: '4H 均线金叉放量', time: '13:50 (45m 前)'
+                }
             ];
+
             var sHost = document.getElementById('overviewSignals');
             if (sHost) sHost.innerHTML = signals.map(function (s) {
-                var ctx = JSON.stringify({symbol: s.symbol, tone: s.tone, dir: s.dir}).replace(/"/g, '&quot;');
-                return '<div class="card card--tap flex" data-push="signal-detail" data-ctx="' + ctx + '" style="justify-content:space-between;">'
-                    + '<div class="flex"><span class="item__ico ' + (s.dir === 'up' ? 'ico-up' : 'ico-down') + '" style="width:34px;height:34px;font-size:14px;">' + (s.dir === 'up' ? '▲' : '▼') + '</span>'
-                    + '<div><div style="font-weight:700;font-size:13.5px;">' + s.symbol + '</div><div class="tiny muted" style="margin-top:2px;">' + s.tone + ' · ' + s.hint + '</div></div></div>'
-                    + '<svg class="svg-ic svg-ic--sm" style="color:var(--text-muted);"><use href="#i-chevron"/></svg>'
+                var ctx = JSON.stringify({symbol: s.symbol, type: s.type, dir: s.dir, strategy: s.strategy}).replace(/"/g, '&quot;');
+                var isUp = s.dir === 'up';
+                return '<div class="signal-pulse-card ' + (isUp ? 'is-bullish' : 'is-bearish') + '" data-push="signal-detail" data-ctx="' + ctx + '">'
+                    + '<div class="flex" style="justify-content:space-between;align-items:flex-start;">'
+                    + '<div class="flex" style="gap:8px;">'
+                    + '<span style="font-weight:800;font-size:15px;color:var(--text-primary);">' + s.symbol + '</span>'
+                    + '<span class="signal-trigger-tag">⚡ ' + s.type + '</span>'
+                    + '</div>'
+                    + '<div class="flex" style="gap:4px;align-items:center;">'
+                    + '<span class="badge badge--ok" style="font-size:11px;padding:2px 7px;">' + (isUp ? '做多信号' : '做空信号') + '</span>'
+                    + '<span class="tiny sec__link">详情 →</span>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div class="kpi-grid" style="margin:10px 0 8px;grid-template-columns:repeat(3,1fr);gap:6px;">'
+                    + '<div class="kpi" style="padding:6px;"><div class="kpi__label">触发基准价</div><div class="kpi__value num" style="font-size:13.5px;">' + s.triggerPrice + '</div></div>'
+                    + '<div class="kpi" style="padding:6px;"><div class="kpi__label">预期目标位</div><div class="kpi__value num pnl-pos" style="font-size:13.5px;">' + s.targetPrice + '</div></div>'
+                    + '<div class="kpi" style="padding:6px;"><div class="kpi__label">建议硬止损</div><div class="kpi__value num" style="font-size:13.5px;color:var(--status-danger);">' + s.stopAt + '</div></div>'
+                    + '</div>'
+                    + '<div class="flex" style="justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--border-subtle);">'
+                    + '<span class="tiny" style="color:var(--text-secondary);font-weight:600;">📊 ' + s.volSpike + '</span>'
+                    + '<span class="tiny muted num">' + s.time + '</span>'
+                    + '</div>'
                     + '</div>';
             }).join('');
         })();
@@ -3649,12 +3723,12 @@
         // ============ 跟单屏渲染：支持搜索、多维度排序与快速过滤 ============
         (function () {
             var allTraders = [
-                { id: 'okx:1', name: 'Alpha_Momentum', ex: 'OKX', coins: 'BTC, SOL', roi: 142.5, maxDd: '5.2%', aum: 482000, aumStr: '48.2万', followerProfit: '+$6.8万', followers: 1204, cap: 1500, win: 64, days: 218 },
-                { id: 'okx:2', name: 'SteadyGrid_ETH', ex: 'OKX', coins: 'ETH, ARB', roi: 68.2, maxDd: '3.1%', aum: 210000, aumStr: '21.0万', followerProfit: '+$2.4万', followers: 842, cap: 1000, win: 76, days: 156 },
-                { id: 'okx:3', name: 'Breakout_Quant', ex: 'OKX', coins: 'SOL, DOGE', roi: 215.8, maxDd: '9.4%', aum: 890000, aumStr: '89.0万', followerProfit: '+$14.2万', followers: 2338, cap: 2500, win: 52, days: 340 },
-                { id: 'okx:4', name: 'Trend_Master', ex: 'OKX', coins: 'BTC, LTC', roi: 45.3, maxDd: '4.0%', aum: 125000, aumStr: '12.5万', followerProfit: '+$1.8万', followers: 500, cap: 500, win: 58, days: 88 },
-                { id: 'okx:5', name: 'Macro_Arbitrage', ex: 'OKX', coins: 'BTC, ETH', roi: -4.2, maxDd: '6.5%', aum: 68000, aumStr: '6.8万', followerProfit: '-$800', followers: 120, cap: 800, win: 44, days: 45 },
-                { id: 'okx:6', name: 'SOL_HighFreq', ex: 'OKX', coins: 'SOL, JUP', roi: 88.9, maxDd: '4.8%', aum: 340000, aumStr: '34.0万', followerProfit: '+$4.9万', followers: 1100, cap: 1200, win: 69, days: 202 }
+                { id: 'okx:1', name: 'Alpha_Momentum', ex: 'OKX', coins: 'BTC, SOL', roi: 142.5, maxDd: '5.2%', aum: 482000, aumStr: '48.2万', followerProfit: '+$6.8万', followers: 1204, cap: 1500, win: 64, days: 218, curve: [12, 18, 15, 32, 45, 68, 85, 110, 142.5] },
+                { id: 'okx:2', name: 'SteadyGrid_ETH', ex: 'OKX', coins: 'ETH, ARB', roi: 68.2, maxDd: '3.1%', aum: 210000, aumStr: '21.0万', followerProfit: '+$2.4万', followers: 842, cap: 1000, win: 76, days: 156, curve: [8, 14, 22, 28, 36, 48, 54, 62, 68.2] },
+                { id: 'okx:3', name: 'Breakout_Quant', ex: 'OKX', coins: 'SOL, DOGE', roi: 215.8, maxDd: '9.4%', aum: 890000, aumStr: '89.0万', followerProfit: '+$14.2万', followers: 2338, cap: 2500, win: 52, days: 340, curve: [15, 10, 35, 70, 95, 130, 165, 190, 215.8] },
+                { id: 'okx:4', name: 'Trend_Master', ex: 'OKX', coins: 'BTC, LTC', roi: 45.3, maxDd: '4.0%', aum: 125000, aumStr: '12.5万', followerProfit: '+$1.8万', followers: 500, cap: 500, win: 58, days: 88, curve: [5, 12, 18, 22, 26, 34, 38, 42, 45.3] },
+                { id: 'okx:5', name: 'Macro_Arbitrage', ex: 'OKX', coins: 'BTC, ETH', roi: -4.2, maxDd: '6.5%', aum: 68000, aumStr: '6.8万', followerProfit: '-$800', followers: 120, cap: 800, win: 44, days: 45, curve: [2, 5, 1, -1, 0, -2, -3, -4.2] },
+                { id: 'okx:6', name: 'SOL_HighFreq', ex: 'OKX', coins: 'SOL, JUP', roi: 88.9, maxDd: '4.8%', aum: 340000, aumStr: '34.0万', followerProfit: '+$4.9万', followers: 1100, cap: 1200, win: 69, days: 202, curve: [10, 24, 32, 44, 52, 65, 74, 82, 88.9] }
             ];
 
             var host = document.getElementById('copyTraderList');
@@ -3716,11 +3790,31 @@
                     return;
                 }
 
+                function drawSparkSvg(pts, isUp) {
+                    var stroke = isUp ? 'var(--status-success)' : 'var(--status-danger)';
+                    var fill = isUp ? 'rgba(99, 214, 154, 0.15)' : 'rgba(240, 100, 91, 0.15)';
+                    var min = Math.min.apply(null, pts);
+                    var max = Math.max.apply(null, pts);
+                    var range = max - min || 1;
+                    var w = 70, h = 32;
+                    var coords = pts.map(function (v, i) {
+                        var x = (i / (pts.length - 1)) * w;
+                        var y = h - ((v - min) / range) * (h - 6) - 3;
+                        return x.toFixed(1) + ',' + y.toFixed(1);
+                    }).join(' ');
+                    var area = coords + ' ' + w + ',' + h + ' 0,' + h;
+                    return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:70px;height:32px;overflow:visible;" preserveAspectRatio="none">'
+                        + '<polygon points="' + area + '" fill="' + fill + '" />'
+                        + '<polyline points="' + coords + '" fill="none" stroke="' + stroke + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />'
+                        + '</svg>';
+                }
+
                 host.innerHTML = filtered.map(function (t) {
                     var isFull = t.followers >= t.cap;
                     var isPos = t.roi >= 0;
                     var roiText = (isPos ? '+' : '') + t.roi.toFixed(1) + '%';
                     var tctx = JSON.stringify({name: t.name, roi: roiText, win: t.win + '%', aum: '$' + t.aumStr, days: t.days}).replace(/"/g, '&quot;');
+                    var sparkHtml = drawSparkSvg(t.curve || [10, 20, 35, 50, 70], isPos);
 
                     return '<div class="trader-card" data-push="trader" data-ctx="' + tctx + '">'
                         + '<div>'
@@ -3731,9 +3825,12 @@
                         + '<div class="tiny muted">' + t.ex + ' · ' + t.days + '天</div>'
                         + '</div>'
                         + '</div>'
-                        + '<div style="margin:6px 0 2px;">'
-                        + '<div class="tiny muted">90D 收益率</div>'
-                        + '<div class="trader-card__roi num ' + (isPos ? 'pnl-pos' : 'pnl-neg') + '">' + roiText + '</div>'
+                        + '<div class="flex" style="justify-content:space-between;align-items:center;margin:6px 0 4px;">'
+                        + '<div>'
+                        + '<div class="tiny muted" style="font-size:10.5px;">90D 收益率</div>'
+                        + '<div class="trader-card__roi num ' + (isPos ? 'pnl-pos' : 'pnl-neg') + '" style="font-size:16px;margin:2px 0 0;">' + roiText + '</div>'
+                        + '</div>'
+                        + '<div style="flex:0 0 auto;line-height:1;">' + sparkHtml + '</div>'
                         + '</div>'
                         + '<div class="tiny muted" style="font-size:10.5px;margin-bottom:6px;">主做: <b style="color:var(--text-secondary);">' + t.coins + '</b></div>'
                         + '</div>'
@@ -3823,54 +3920,4 @@
     </script>
 </body>
 
-</html>function buildSparkSvg(points, isUp) {
-                    var stroke = isUp ? 'var(--status-success)' : 'var(--status-danger)';
-                    var fill = isUp ? 'rgba(99, 214, 154, 0.12)' : 'rgba(240, 100, 91, 0.12)';
-                    var min = Math.min.apply(null, points);
-                    var max = Math.max.apply(null, points);
-                    var range = max - min || 1;
-                    var w = 120, h = 28;
-                    var coords = points.map(function (v, i) {
-                        var x = (i / (points.length - 1)) * w;
-                        var y = h - ((v - min) / range) * (h - 6) - 3;
-                        return x.toFixed(1) + ',' + y.toFixed(1);
-                    }).join(' ');
-                    var area = coords + ' ' + w + ',' + h + ' 0,' + h;
-                    return '<svg class="trader-sparkline" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">'
-                        + '<polygon points="' + area + '" fill="' + fill + '" />'
-                        + '<polyline points="' + coords + '" fill="none" stroke="' + stroke + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />'
-                        + '</svg>';
-                }
-
-                host.innerHTML = filtered.map(function (t) {
-                    var isFull = t.followers >= t.cap;
-                    var isPos = t.roi >= 0;
-                    var roiText = (isPos ? '+' : '') + t.roi.toFixed(1) + '%';
-                    var tctx = JSON.stringify({name: t.name, roi: roiText, win: t.win + '%', aum: '$' + t.aumStr, days: t.days}).replace(/"/g, '&quot;');
-                    var curve = t.curve || [10, 15, 12, 28, 40, 55, 70, isPos ? 95 : 5];
-                    var sparkSvg = buildSparkSvg(curve, isPos);
-
-                    return '<div class="trader-card" data-push="trader" data-ctx="' + tctx + '">'
-                        + '<div>'
-                        + '<div class="trader-card__head">'
-                        + '<div class="trader-card__avatar">' + t.name.slice(0, 1) + '</div>'
-                        + '<div style="min-width:0;flex:1;">'
-                        + '<div class="trader-card__name" title="' + t.name + '">' + t.name + '</div>'
-                        + '<div class="tiny muted">' + t.ex + ' · ' + t.days + '天</div>'
-                        + '</div>'
-                        + '</div>'
-                        + '<div style="margin:4px 0 0;">'
-                        + '<div class="flex" style="justify-content:space-between;align-items:baseline;">'
-                        + '<span class="tiny muted">90D 收益率</span>'
-                        + '<span class="trader-card__roi num ' + (isPos ? 'pnl-pos' : 'pnl-neg') + '" style="font-size:16px;">' + roiText + '</span>'
-                        + '</div>'
-                        + '<div class="trader-sparkline-wrap">' + sparkSvg + '</div>'
-                        + '</div>'
-                        + '</div>'
-                        + '<div style="border-top:1px solid var(--border-subtle);padding-top:6px;margin-top:4px;">'
-                        + '<div class="trader-card__meta-row"><span>胜率 / 回撤</span><span class="num" style="font-weight:600;color:var(--text-primary);">' + t.win + '% <span class="muted tiny">/ ' + t.maxDd + '</span></span></div>'
-                        + '<div class="trader-card__meta-row"><span>跟随总收益</span><span class="num ' + (t.followerProfit.indexOf('+') === 0 ? 'pnl-pos' : '') + '">' + t.followerProfit + '</span></div>'
-                        + '<div class="trader-card__meta-row"><span>跟随人数</span><span class="num">' + (isFull ? '<span style="color:var(--status-danger);font-weight:700;">满员</span>' : t.followers.toLocaleString() + '人') + '</span></div>'
-                        + '</div>'
-                        + '</div>';
-                
+</html>
