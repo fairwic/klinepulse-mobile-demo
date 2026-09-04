@@ -127,7 +127,7 @@
             }
         }
 
-        /* ============ 顶栏 ============ */
+        /* ============ 现代化顶栏 (精简灵动 + 交易员状态) ============ */
         .topbar {
             position: sticky;
             top: 0;
@@ -139,74 +139,113 @@
             height: var(--topbar-h);
             padding: 0 14px;
             background: var(--bg-page);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(14px);
             border-bottom: 1px solid var(--border-subtle);
         }
-
         .topbar__brand {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 9px;
             min-width: 0;
+            cursor: pointer;
         }
-
         .topbar__logo {
-            width: 30px;
-            height: 30px;
-            border-radius: 9px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
             background: linear-gradient(140deg, #f2c879, #d19a3f);
             display: grid;
             place-items: center;
             color: #1a1206;
             font-weight: 800;
-            font-size: 12px;
+            font-size: 11.5px;
             flex: 0 0 auto;
-            box-shadow: 0 2px 10px rgba(232, 180, 92, 0.35);
+            box-shadow: 0 2px 10px rgba(232, 180, 92, 0.3);
             letter-spacing: -0.5px;
         }
-
-        .topbar__title {
-            font-weight: 700;
-            font-size: 15px;
-            letter-spacing: 0.2px;
-            white-space: nowrap;
+        .topbar__title-wrap {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 0;
         }
-
+        .topbar__title {
+            font-weight: 800;
+            font-size: 14.5px;
+            letter-spacing: -0.2px;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+        .topbar__sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            line-height: 1;
+            margin-top: 2px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .topbar__status-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--status-success);
+            box-shadow: 0 0 6px var(--status-success);
+        }
         .topbar__actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
-
+        .topbar__lang-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            height: 30px;
+            padding: 0 8px;
+            border-radius: 8px;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-secondary);
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 140ms ease;
+        }
+        .topbar__lang-pill:active {
+            transform: scale(0.96);
+            background: var(--bg-elevated);
+        }
         .icon-btn {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
             border: 1px solid var(--border-subtle);
             background: var(--bg-subtle);
             color: var(--text-secondary);
             display: grid;
             place-items: center;
-            font-size: 15px;
             cursor: pointer;
+            transition: all 140ms ease;
         }
-
+        .icon-btn:active {
+            transform: scale(0.94);
+            border-color: var(--border-strong);
+        }
         .icon-btn--dot {
             position: relative;
         }
-
         .icon-btn--dot::after {
             content: "";
             position: absolute;
-            top: 7px;
-            right: 8px;
-            width: 6px;
-            height: 6px;
+            top: 5px;
+            right: 6px;
+            width: 5px;
+            height: 5px;
             border-radius: 50%;
             background: var(--status-danger);
-            box-shadow: 0 0 0 2px var(--bg-page);
+            box-shadow: 0 0 0 1.5px var(--bg-page);
         }
-
         /* 统一 SVG 图标尺寸类 */
         .svg-ic {
             width: 20px;
@@ -1455,6 +1494,21 @@
             white-space: nowrap;
         }
 
+        /* ============ 首页资产卡片收益曲线 ============ */
+        .hero-equity-curve-wrap {
+            width: 100px;
+            height: 48px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: flex-end;
+        }
+        .hero-equity-curve {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+
 /* ============ 核心高价值指标与标签体系 ============ */
         .hero-safety-pill {
             display: inline-flex;
@@ -1976,22 +2030,25 @@
             </defs>
         </svg>
 
-        <!-- 顶栏 -->
+        <!-- 现代化顶栏：品牌标识 + 状态感知 + 灵动快捷操作 -->
         <header class="topbar">
-            <div class="topbar__brand">
+            <div class="topbar__brand" data-goto="overview">
                 <div class="topbar__logo">KP</div>
-                <span class="topbar__title" id="topbarTitle">自动化交易</span>
+                <div class="topbar__title-wrap">
+                    <span class="topbar__title" id="topbarTitle">概览</span>
+                    <span class="topbar__sub"><span class="topbar__status-dot"></span><span id="topbarSubStatus">实盘守护中</span></span>
+                </div>
             </div>
             <div class="topbar__actions">
-                <button class="icon-btn" id="langBtn" aria-label="切换语言"
-                    style="font-size:12px;font-weight:700;">EN</button>
-                <button class="icon-btn icon-btn--dot" aria-label="通知" data-push="notification-center"><svg
-                        class="svg-ic svg-ic--sm">
-                        <use href="#i-bell" />
-                    </svg></button>
-                <button class="icon-btn" id="themeBtn" aria-label="切换主题"><svg class="svg-ic svg-ic--sm">
-                        <use href="#i-moon" />
-                    </svg></button>
+                <button class="topbar__lang-pill" id="langBtn" aria-label="切换语言">
+                    <span>CN</span><span class="tiny muted" style="font-size:9px;">▾</span>
+                </button>
+                <button class="icon-btn icon-btn--dot" aria-label="通知中心" data-push="notification-center">
+                    <svg class="svg-ic svg-ic--sm"><use href="#i-bell" /></svg>
+                </button>
+                <button class="icon-btn" id="themeBtn" aria-label="切换主题">
+                    <svg class="svg-ic svg-ic--sm"><use href="#i-moon" /></svg>
+                </button>
             </div>
         </header>
 
@@ -2000,7 +2057,7 @@
             <!-- ========== 自动化交易屏（单一币种只读监控台） ========== -->
             <!-- ========== 概览屏（首页驾驶舱：我的钱怎么样 + 有没有事要处理） ========== -->
             <section class="screen is-active" data-screen="overview">
-                <!-- 资产 + 今日盈亏大数字 + 核心风控水位与止损守护 -->
+                <!-- 资产 + 今日盈亏大数字 + 30D 资产净值走势曲线 + 核心风控水位 -->
                 <div class="card card--focus">
                     <div class="flex" style="justify-content:space-between;align-items:center;">
                         <span class="tiny muted">实盘总资产估值 · USDT (OKX)</span>
@@ -2011,13 +2068,33 @@
                             100% 止损守护
                         </span>
                     </div>
-                    <div class="num" style="font-size:32px;font-weight:800;letter-spacing:-0.5px;margin-top:6px;">
-                        12,847.30</div>
-                    <div class="flex" style="gap:14px;margin-top:6px;">
-                        <span class="num pnl-pos" style="font-size:14px;font-weight:700;">+318.60 今日</span>
-                        <span class="num pnl-pos tiny" style="align-self:center;">▲ 2.54%</span>
-                        <span class="num muted tiny" style="align-self:center;">累计胜率 68%</span>
+
+                    <div class="flex" style="justify-content:space-between;align-items:center;margin-top:6px;">
+                        <div>
+                            <div class="num" style="font-size:32px;font-weight:800;letter-spacing:-0.5px;">12,847.30</div>
+                            <div class="flex" style="gap:10px;margin-top:4px;">
+                                <span class="num pnl-pos" style="font-size:14px;font-weight:700;">+318.60 今日</span>
+                                <span class="num pnl-pos tiny" style="align-self:center;">▲ 2.54%</span>
+                                <span class="num muted tiny" style="align-self:center;">累计胜率 68%</span>
+                            </div>
+                        </div>
+
+                        <!-- 30D 实盘收益净值曲线（高光渐变微图） -->
+                        <div class="hero-equity-curve-wrap" title="近 30 天实盘净值曲线">
+                            <svg class="hero-equity-curve" viewBox="0 0 100 48" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="heroCurveGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="var(--status-success)" stop-opacity="0.32" />
+                                        <stop offset="100%" stop-color="var(--status-success)" stop-opacity="0.0" />
+                                    </linearGradient>
+                                </defs>
+                                <polygon points="0,40 12,38 24,34 36,36 48,26 60,22 72,25 84,12 100,6 100,48 0,48" fill="url(#heroCurveGrad)" />
+                                <polyline points="0,40 12,38 24,34 36,36 48,26 60,22 72,25 84,12 100,6" fill="none" stroke="var(--status-success)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="100" cy="6" r="3" fill="var(--status-success)" stroke="var(--bg-surface)" stroke-width="1.5" />
+                            </svg>
+                        </div>
                     </div>
+
                     <div class="kpi-grid" style="margin-top:14px;grid-template-columns:repeat(3,1fr);gap:6px;">
                         <div class="kpi">
                             <div class="kpi__label">在跑组合</div>
@@ -2457,6 +2534,17 @@
                     t.classList.toggle('is-active', t.dataset.target === target);
                 });
                 if (titles[target]) titleEl.textContent = titles[target];
+                var subEl = document.getElementById('topbarSubStatus');
+                if (subEl) {
+                    var subs = {
+                        overview: '实盘守护中',
+                        markets: '全市场行情',
+                        copytrade: '交易员表现榜',
+                        discover: '精选策略库',
+                        user: 'Pro 权益正常'
+                    };
+                    subEl.textContent = subs[target] || 'KlinePulse';
+                }
                 window.scrollTo(0, 0);
             }
 
